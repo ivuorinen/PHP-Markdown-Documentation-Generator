@@ -58,7 +58,7 @@ This command line tool can be installed using [composer](https://getcomposer.org
 
 From the local working directory of the project that you would like to document, run:
 ```
-$ composer require --dev victorjonsson/markdowndocs
+$ composer require --dev getgrav/markdowndocs
 ```
 This will add victorjonsson/markdowndocs to the `require-dev` section of your project's composer.json file.  The phpdoc-md executable will automatically be copied to your project's `vendor/bin` directory.
 
