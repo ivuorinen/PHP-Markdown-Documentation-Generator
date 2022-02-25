@@ -1,23 +1,26 @@
 <?php
+
 namespace PHPDocsMD;
+
+use PHPDocsMD\Entities\ClassEntity;
+use PHPDocsMD\Entities\FunctionEntity;
 
 /**
  * Find a specific function in a class or an array of classes
+ *
  * @package PHPDocsMD
  */
 class FunctionFinder
 {
-    /**
-     * @var array
-     */
-    private $cache = [];
+    private array $cache = [];
 
     /**
      * @param string $methodName
-     * @param array $classes
+     * @param array  $classes
+     *
      * @return bool|FunctionEntity
      */
-    public function findInClasses($methodName, $classes)
+    public function findInClasses(string $methodName, array $classes)
     {
         foreach ($classes as $className) {
             $function = $this->find($methodName, $className);
@@ -25,42 +28,41 @@ class FunctionFinder
                 return $function;
             }
         }
+
         return false;
     }
 
     /**
      * @param string $methodName
      * @param string $className
+     *
      * @return bool|FunctionEntity
      */
-    public function find($methodName, $className)
+    public function find(string $methodName, string $className)
     {
         if ($className) {
             $classEntity = $this->loadClassEntity($className);
-            $functions = $classEntity->getFunctions();
-            foreach($functions as $function) {
-                if($function->getName() == $methodName) {
+            $functions   = $classEntity->getFunctions();
+            foreach ($functions as $function) {
+                if ($function->getName() === $methodName) {
                     return $function;
                 }
             }
-            if($classEntity->getExtends()) {
+            if ($classEntity->getExtends()) {
                 return $this->find($methodName, $classEntity->getExtends());
             }
         }
+
         return false;
     }
 
-    /**
-     * @param $className
-     * @return ClassEntity
-     */
-    private function loadClassEntity($className)
+    private function loadClassEntity(string $className): ClassEntity
     {
-        if (empty($this->cache[$className])) {
-            $reflector = new Reflector($className, $this);
-            $this->cache[$className] = $reflector->getClassEntity();
+        if (empty($this->cache[ $className ])) {
+            $reflector                 = new Reflector($className, $this);
+            $this->cache[ $className ] = $reflector->getClassEntity();
         }
 
-        return $this->cache[$className];
+        return $this->cache[ $className ];
     }
 }

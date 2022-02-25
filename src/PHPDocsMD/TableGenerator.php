@@ -1,12 +1,8 @@
 <?php
-/**
- * The interface implemented by all table generators.
- *
- * @since TBD
- */
 
 namespace PHPDocsMD;
 
+use PHPDocsMD\Entities\FunctionEntity;
 
 /**
  * Any class that can create a markdown-formatted table describing class functions
@@ -16,6 +12,14 @@ namespace PHPDocsMD;
  */
 interface TableGenerator
 {
+    /**
+     * Create a markdown-formatted code view out of an example comment
+     *
+     * @param string $example
+     *
+     * @return string
+     */
+    public static function formatExampleComment(string $example): string;
 
     /**
      * All example comments found while generating the table will be
@@ -24,12 +28,12 @@ interface TableGenerator
      *
      * @param bool $toggle
      */
-    function appendExamplesToEndOfTable($toggle);
+    public function appendExamplesToEndOfTable(bool $toggle);
 
     /**
      * Begin generating a new markdown-formatted table
      */
-    function openTable();
+    public function openTable();
 
     /**
      * Toggle whether or not methods being abstract (or part of an interface)
@@ -37,7 +41,7 @@ interface TableGenerator
      *
      * @param bool $toggle
      */
-    function doDeclareAbstraction($toggle);
+    public function doDeclareAbstraction(bool $toggle);
 
     /**
      * Generates a markdown formatted table row with information about given function. Then adds the
@@ -47,19 +51,7 @@ interface TableGenerator
      *
      * @return string
      */
-    function addFunc(FunctionEntity $func);
+    public function addFunc(FunctionEntity $func): string;
 
-    /**
-     * @return string
-     */
-    function getTable();
-
-    /**
-     * Create a markdown-formatted code view out of an example comment
-     *
-     * @param string $example
-     *
-     * @return string
-     */
-    public static function formatExampleComment($example);
+    public function getTable(): string;
 }

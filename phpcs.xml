@@ -1,0 +1,15 @@
+<ruleset name="PSR2">
+    <description>PSR2</description>
+
+    <file>src</file>
+    <exclude-pattern>vendor</exclude-pattern>
+
+    <arg name="colors"/>
+    <arg value="p"/>
+    <!--
+           You can hard-code custom php.ini settings into your custom standard.
+           The following tag sets the memory limit to 64M.
+    -->
+    <ini name="memory_limit" value="128M"/>
+    <rule ref="PSR2"/>
+</ruleset>

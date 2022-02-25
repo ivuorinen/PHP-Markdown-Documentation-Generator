@@ -1,4 +1,5 @@
 <?php
+
 namespace PHPDocsMD\Console;
 
 use PHPDocsMD\MDTableGenerator;
@@ -10,56 +11,38 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-
 /**
  * Console command used to extract markdown-formatted documentation from classes
+ *
  * @package PHPDocsMD\Console
  */
-class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command {
-
-    const ARG_CLASS = 'class';
-    const OPT_BOOTSTRAP = 'bootstrap';
-    const OPT_IGNORE = 'ignore';
-    const OPT_VISIBILITY = 'visibility';
-    const OPT_METHOD_REGEX = 'methodRegex';
-    const OPT_TABLE_GENERATOR = 'tableGenerator';
-    const OPT_SEE = 'see';
-    const OPT_NO_INTERNAL = 'no-internal';
-
-    /**
-     * @var array
-     */
-    private $memory = [];
+class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
+{
+    public const ARG_CLASS = 'class';
+    public const OPT_BOOTSTRAP = 'bootstrap';
+    public const OPT_IGNORE = 'ignore';
+    public const OPT_VISIBILITY = 'visibility';
+    public const OPT_METHOD_REGEX = 'methodRegex';
+    public const OPT_TABLE_GENERATOR = 'tableGenerator';
+    public const OPT_SEE = 'see';
+    public const OPT_NO_INTERNAL = 'no-internal';
 
     /**
      * @var array
      */
-    private $visibilityFilter = [];
+    private array $memory = [];
+
+    /**
+     * @var array
+     */
+    private array $visibilityFilter = [];
 
     /**
      * @var string
      */
-    private $methodRegex = '';
+    private string $methodRegex = '';
 
-    /**
-     * @param $name
-     * @return \PHPDocsMD\ClassEntity
-     */
-    private function getClassEntity($name) {
-        if( !isset($this->memory[$name]) ) {
-            $reflector = new Reflector($name);
-            if ( ! empty($this->visibilityFilter)) {
-                $reflector->setVisibilityFilter($this->visibilityFilter);
-            }
-            if ( ! empty($this->methodRegex)) {
-                $reflector->setMethodRegex($this->methodRegex);
-            }
-            $this->memory[$name] = $reflector->getClassEntity();
-        }
-        return $this->memory[$name];
-    }
-
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('generate')
@@ -100,16 +83,16 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command {
                 self::OPT_TABLE_GENERATOR,
                 null,
                 InputOption::VALUE_OPTIONAL,
-                'The slug of a supported table generator class or a fully qualified TableGenerator interface implementation class name.',
+                'The slug of a supported table generator class or a fully qualified TableGenerator interface implementation class name.', // phpcs:ignore
                 'default'
-          )
-          ->addOption(
+            )
+            ->addOption(
                 self::OPT_SEE,
                 null,
                 InputOption::VALUE_NONE,
                 'Include @see in generated markdown'
-             )
-             ->addOption(
+            )
+            ->addOption(
                 self::OPT_NO_INTERNAL,
                 null,
                 InputOption::VALUE_NONE,
@@ -118,98 +101,116 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command {
     }
 
     /**
-     * @param InputInterface $input
+     * @param InputInterface  $input
      * @param OutputInterface $output
+     *
      * @return int|null
      * @throws \InvalidArgumentException
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): ?int
     {
-
-        $classes = $input->getArgument(self::ARG_CLASS);
-        $bootstrap = $input->getOption(self::OPT_BOOTSTRAP);
-        $ignore = explode(',', $input->getOption(self::OPT_IGNORE));
+        $classes                = $input->getArgument(self::ARG_CLASS);
+        $bootstrap              = $input->getOption(self::OPT_BOOTSTRAP);
+        $ignore                 = explode(',', $input->getOption(self::OPT_IGNORE));
         $this->visibilityFilter = empty($input->getOption(self::OPT_VISIBILITY))
-            ? ['public', 'protected', 'abstract', 'final']
-            : array_map('trim', preg_split('/\\s*,\\s*/', $input->getOption(self::OPT_VISIBILITY)));
-        $this->methodRegex = $input->getOption(self::OPT_METHOD_REGEX) ?: false;
-        $includeSee = $input->getOption(self::OPT_SEE);
-        $noInternal = $input->getOption(self::OPT_NO_INTERNAL);
-        $requestingOneClass = false;
+            ? [ 'public', 'protected', 'abstract', 'final' ]
+            : array_map(
+                'trim',
+                preg_split('/\\s*,\\s*/', $input->getOption(self::OPT_VISIBILITY))
+            );
+        $this->methodRegex      = $input->getOption(self::OPT_METHOD_REGEX) ?: false;
+        $includeSee             = $input->getOption(self::OPT_SEE);
+        $noInternal             = $input->getOption(self::OPT_NO_INTERNAL);
+        $requestingOneClass     = false;
 
-        if( $bootstrap ) {
-            require_once strpos($bootstrap,'/') === 0 ? $bootstrap : getcwd().'/'.$bootstrap;
+        if ($bootstrap) {
+            require_once strpos($bootstrap, '/') === 0 ? $bootstrap : getcwd() . '/' . $bootstrap;
         }
 
         $classCollection = [];
-        if( strpos($classes, ',') !== false ) {
-            foreach(explode(',', $classes) as $class) {
-                if( class_exists($class) || interface_exists($class) || trait_exists($class) )
+        if (strpos($classes, ',') !== false) {
+            foreach (explode(',', $classes) as $class) {
+                if (class_exists($class) || interface_exists($class) || trait_exists($class)) {
                     $classCollection[0][] = $class;
+                }
             }
-        }
-        elseif( class_exists($classes) || interface_exists($classes) || trait_exists($classes) ) {
-            $classCollection[] = array($classes);
+        } elseif (class_exists($classes) || interface_exists($classes) || trait_exists($classes)) {
+            $classCollection[]  = [ $classes ];
             $requestingOneClass = true;
-        } elseif( is_dir($classes) ) {
+        } elseif (is_dir($classes)) {
             $classCollection = $this->findClassesInDir($classes, [], $ignore);
         } else {
             throw new \InvalidArgumentException('Given input is neither a class nor a source directory');
         }
 
         $tableGeneratorSlug = $input->getOption(self::OPT_TABLE_GENERATOR);
-        $tableGenerator = $this->buildTableGenerator($tableGeneratorSlug);
+        $tableGenerator     = $this->buildTableGenerator($tableGeneratorSlug);
 
         $tableOfContent = [];
-        $body = [];
-        $classLinks = [];
+        $body           = [];
+        $classLinks     = [];
 
-        foreach($classCollection as $ns => $classes) {
-            foreach($classes as $className) {
+        foreach ($classCollection as $classes) {
+            foreach ($classes as $className) {
                 $class = $this->getClassEntity($className);
 
                 if ($class->hasIgnoreTag()
-                        || ($class->hasInternalTag() && $noInternal)) {
+                     || ($class->hasInternalTag() && $noInternal)) {
                     continue;
                 }
 
                 // Add to tbl of contents
-                $tableOfContent[] = sprintf('- [%s](#%s)', $class->generateTitle('%name% %extra%'), $class->generateAnchor());
+                $tableOfContent[] = sprintf(
+                    '- [%s](#%s)',
+                    $class->generateTitle('%name% %extra%'),
+                    $class->generateAnchor()
+                );
 
-                $classLinks[$class->getName()] = '#'.$class->generateAnchor();
+                $classLinks[ $class->getName() ] = '#' . $class->generateAnchor();
 
                 // generate function table
                 $tableGenerator->openTable();
-                $tableGenerator->doDeclareAbstraction(!$class->isInterface());
-                foreach($class->getFunctions() as $func) {
-                    if ($func->isInternal() && $noInternal) {
+                $tableGenerator->doDeclareAbstraction(! $class->isInterface());
+                foreach ($class->getFunctions() as $func) {
+                    if ($noInternal && $func->isInternal()) {
                         continue;
                     }
                     if ($func->isReturningNativeClass()) {
-                        $classLinks[$func->getReturnType()] = 'http://php.net/manual/en/class.'.
-                            strtolower(str_replace(array('[]', '\\'), '', $func->getReturnType())).
-                            '.php';
+                        $link                                 = sprintf(
+                            'https://php.net/manual/en/class.%s.php',
+                            strtolower(
+                                str_replace([ '[]', '\\' ], '', $func->getReturnType())
+                            )
+                        );
+                        $classLinks[ $func->getReturnType() ] = $link;
                     }
-                    foreach($func->getParams() as $param) {
+                    foreach ($func->getParams() as $param) {
                         if ($param->getNativeClassType()) {
-                            $classLinks[$param->getNativeClassType()] = 'http://php.net/manual/en/class.'.
-                                strtolower(str_replace(array('[]', '\\'), '', $param->getNativeClassType())).
-                                '.php';
+                            $link                                       = sprintf(
+                                'https://php.net/manual/en/class.%s.php',
+                                strtolower(str_replace([ '[]', '\\', ], '', $param->getNativeClassType()))
+                            );
+                            $classLinks[ $param->getNativeClassType() ] = $link;
                         }
                     }
                     $tableGenerator->addFunc($func, $includeSee);
                 }
 
-                $docs = ($requestingOneClass ? '':'<hr /><a id="' . trim($classLinks[$class->getName()], '#') . '"></a>'.PHP_EOL);
+                $docs = (
+                    $requestingOneClass
+                    ? ''
+                    : '<hr /><a id="' . trim($classLinks[ $class->getName() ], '#') . '"></a>' .
+                      PHP_EOL . PHP_EOL
+                );
 
-                if( $class->isDeprecated() ) {
-                    $docs .= '### <strike>'.$class->generateTitle().'</strike>'.PHP_EOL.PHP_EOL.
-                            '> **DEPRECATED** '.$class->getDeprecationMessage().PHP_EOL.PHP_EOL;
-                }
-                else {
-                    $docs .= '### '.$class->generateTitle().PHP_EOL.PHP_EOL;
-                    if( $class->getDescription() )
-                        $docs .= '> '.$class->getDescription().PHP_EOL.PHP_EOL;
+                if ($class->isDeprecated()) {
+                    $docs .= '### <del>' . $class->generateTitle() . '</del>' . PHP_EOL . PHP_EOL .
+                             '> **DEPRECATED** ' . $class->getDeprecationMessage() . PHP_EOL . PHP_EOL;
+                } else {
+                    $docs .= '### ' . $class->generateTitle() . PHP_EOL . PHP_EOL;
+                    if ($class->getDescription()) {
+                        $docs .= '> ' . $class->getDescription() . PHP_EOL . PHP_EOL;
+                    }
                 }
 
                 if ($includeSee && $seeArray = $class->getSee()) {
@@ -219,154 +220,150 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command {
                     $docs .= PHP_EOL;
                 }
 
-                if( $example = $class->getExample() ) {
-                    $docs .= '###### Example' . PHP_EOL . MDTableGenerator::formatExampleComment($example) .PHP_EOL.PHP_EOL;
+                if ($example = $class->getExample()) {
+                    $docs .= sprintf(
+                        '###### Example%s%s',
+                        PHP_EOL,
+                        MDTableGenerator::formatExampleComment($example)
+                    ) . PHP_EOL . PHP_EOL;
                 }
 
-                $docs .= $tableGenerator->getTable().PHP_EOL;
+                $docs .= $tableGenerator->getTable() . PHP_EOL . PHP_EOL;
 
-                if( $class->getExtends() ) {
+                if ($class->getExtends()) {
                     $link = $class->getExtends();
-                    if( $anchor = $this->getAnchorFromClassCollection($classCollection, $class->getExtends()) ) {
-                        $link = sprintf('[%s](#%s)', $link, $anchor);
+                    if ($anchor = $this->getAnchorFromClassCollection(
+                        $classCollection,
+                        $class->getExtends()
+                    )) {
+                        $link = sprintf('[%s](#%s) ', $link, $anchor);
                     }
 
-                    $docs .= PHP_EOL.'*This class extends '.$link.'*'.PHP_EOL;
+                    $docs .= PHP_EOL . '*This class extends ' . $link . '*' . PHP_EOL;
                 }
 
-                if( $interfaces = $class->getInterfaces() ) {
+                if ($interfaces = $class->getInterfaces()) {
                     $interfaceNames = [];
-                    foreach($interfaces as $interface) {
-                        $anchor = $this->getAnchorFromClassCollection($classCollection, $interface);
-                        $interfaceNames[] = $anchor ? sprintf('[%s](#%s)', $interface, $anchor) : $interface;
+                    foreach ($interfaces as $interface) {
+                        $anchor           = $this->getAnchorFromClassCollection(
+                            $classCollection,
+                            $interface
+                        );
+                        $interfaceNames[] = $anchor ? sprintf('[%s](#%s) ', $interface, $anchor)
+                            : $interface;
                     }
-                    $docs .= PHP_EOL.'*This class implements '.implode(', ', $interfaceNames).'*'.PHP_EOL;
+                    $docs .= PHP_EOL . sprintf(
+                        '*This class implements %s*',
+                        implode(', ', $interfaceNames)
+                    ) . PHP_EOL;
                 }
 
                 $body[] = $docs;
             }
         }
 
-        if( empty($tableOfContent) ) {
+        if (empty($tableOfContent)) {
             throw new \InvalidArgumentException('No classes found');
-        } elseif( !$requestingOneClass ) {
-            $output->writeln('## Table of contents'.PHP_EOL);
+        }
+
+        if (! $requestingOneClass) {
+            $output->writeln('## Table of contents' . PHP_EOL);
             $output->writeln(implode(PHP_EOL, $tableOfContent));
         }
 
         // Convert references to classes into links
         asort($classLinks);
         $classLinks = array_reverse($classLinks, true);
-        $docString = implode(PHP_EOL, $body);
-        foreach($classLinks as $className => $url) {
-            $link = sprintf('[%s](%s)', $className, $url);
-            $find = array('<em>'.$className, '/'.$className);
-            $replace = array('<em>'.$link, '/'.$link);
+        $docString  = implode(PHP_EOL, $body);
+        foreach ($classLinks as $className => $url) {
+            $link      = sprintf('[%s](%s) ', $className, $url);
+            $find      = [ '<em>' . $className, '/' . $className ];
+            $replace   = [ '<em>' . $link, '/' . $link ];
             $docString = str_replace($find, $replace, $docString);
         }
 
-        $output->writeln(PHP_EOL.$docString);
-        
+        $output->writeln(PHP_EOL . $docString);
+
         return 0;
     }
 
-    /**
-     * @param $coll
-     * @param $find
-     * @return bool|string
-     */
-    private function getAnchorFromClassCollection($coll, $find)
+    private function findClassesInDir(string $dir, array $collection = [], array $ignores = []): array
     {
-        foreach($coll as $ns => $classes) {
-            foreach($classes as $className) {
-                if( $className == $find ) {
-                    return $this->getClassEntity($className)->generateAnchor();
+        foreach (new \FilesystemIterator($dir) as $f) {
+            /** @var \SplFileInfo $f */
+            if ($f->isFile() && ! $f->isLink()) {
+                [ $ns, $className ] = $this->findClassInFile($f->getRealPath());
+                if ($className && (class_exists(
+                    $className,
+                    true
+                ) || interface_exists($className) || trait_exists($className))) {
+                    $collection[ $ns ][] = $className;
                 }
+            } elseif ($f->isDir() && ! $f->isLink() && ! $this->shouldIgnoreDirectory(
+                $f->getFilename(),
+                $ignores
+            )) {
+                $collection = $this->findClassesInDir($f->getRealPath(), $collection);
             }
         }
-        return false;
+        ksort($collection);
+
+        return $collection;
     }
 
-    /**
-     * @param $file
-     * @return array
-     */
-    private function findClassInFile($file)
+    private function findClassInFile(string $file): array
     {
-        $ns = '';
+        $ns    = '';
         $class = false;
-        foreach(explode(PHP_EOL, file_get_contents($file)) as $line) {
-            if ( strpos($line, '*') === false ) {
-                if( strpos($line, 'namespace') !== false ) {
+        foreach (explode(PHP_EOL, file_get_contents($file)) as $line) {
+            if (strpos($line, '*') === false) {
+                if (strpos($line, 'namespace') !== false) {
                     $ns = trim(current(array_slice(explode('namespace', $line), 1)), '; ');
                     $ns = Utils::sanitizeClassName($ns);
-                } elseif( strpos($line, 'class') !== false ) {
+                } elseif (strpos($line, 'class') !== false) {
                     $class = $this->extractClassNameFromLine('class', $line);
                     break;
-                } elseif( strpos($line, 'interface') !== false ) {
+                } elseif (strpos($line, 'interface') !== false) {
                     $class = $this->extractClassNameFromLine('interface', $line);
                     break;
                 }
             }
         }
-        return $class ? array($ns, $ns .'\\'. $class) : array(false, false);
+
+        return $class ? [ $ns, $ns . '\\' . $class ] : [ false, false ];
     }
 
-    /**
-     * @param string $type
-     * @param string $line
-     * @return string
-     */
-    function extractClassNameFromLine($type, $line)
+    public function extractClassNameFromLine(string $type, string $line): string
     {
         $class = trim(current(array_slice(explode($type, $line), 1)), '; ');
-        return trim(current(explode(' ', $class)));
-    }
 
-    /**
-     * @param $dir
-     * @param array $collection
-     * @param array $ignores
-     * @return array
-     */
-    private function findClassesInDir($dir, $collection=[], $ignores=[])
-    {
-        foreach(new \FilesystemIterator($dir) as $f) {
-            /** @var \SplFileInfo $f */
-            if( $f->isFile() && !$f->isLink() ) {
-                list($ns, $className) = $this->findClassInFile($f->getRealPath());
-                if( $className && (class_exists($className, true) || interface_exists($className) || trait_exists($className)) ) {
-                    $collection[$ns][] = $className;
-                }
-            } elseif( $f->isDir() && !$f->isLink() && !$this->shouldIgnoreDirectory($f->getFilename(), $ignores) ) {
-                $collection = $this->findClassesInDir($f->getRealPath(), $collection);
-            }
-        }
-        ksort($collection);
-        return $collection;
+        return trim(current(explode(' ', $class)));
     }
 
     /**
      * @param $dirName
      * @param $ignores
+     *
      * @return bool
      */
-    private function shouldIgnoreDirectory($dirName, $ignores) {
-        foreach($ignores as $dir) {
+    private function shouldIgnoreDirectory($dirName, $ignores): bool
+    {
+        foreach ($ignores as $dir) {
             $dir = trim($dir);
-            if( !empty($dir) && substr($dirName, -1 * strlen($dir)) == $dir ) {
+            if (! empty($dir) && substr($dirName, - 1 * strlen($dir)) === $dir) {
                 return true;
             }
         }
+
         return false;
     }
 
     protected function buildTableGenerator($tableGeneratorSlug = 'default')
     {
         if (class_exists($tableGeneratorSlug)) {
-            if (!in_array(TableGenerator::class, class_implements($tableGeneratorSlug), true)) {
+            if (! in_array(TableGenerator::class, class_implements($tableGeneratorSlug), true)) {
                 throw new \InvalidArgumentException('The table generator class should implement the ' .
-                                                    TableGenerator::class . ' interface.');
+                                                     TableGenerator::class . ' interface.');
             }
 
             return new $tableGeneratorSlug();
@@ -376,9 +373,48 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command {
             'default' => MDTableGenerator::class,
         ];
 
-        $class = isset($map[$tableGeneratorSlug]) ? $map[$tableGeneratorSlug] : $map['default'];
+        $class = $map[ $tableGeneratorSlug ] ?? $map['default'];
 
-        return new $class;
+        return new $class();
     }
 
+    /**
+     * @param $name
+     *
+     * @return \PHPDocsMD\Entities\ClassEntity
+     */
+    private function getClassEntity($name): \PHPDocsMD\Entities\ClassEntity
+    {
+        if (! isset($this->memory[ $name ])) {
+            $reflector = new Reflector($name);
+            if (! empty($this->visibilityFilter)) {
+                $reflector->setVisibilityFilter($this->visibilityFilter);
+            }
+            if (! empty($this->methodRegex)) {
+                $reflector->setMethodRegex($this->methodRegex);
+            }
+            $this->memory[ $name ] = $reflector->getClassEntity();
+        }
+
+        return $this->memory[ $name ];
+    }
+
+    /**
+     * @param $coll
+     * @param $find
+     *
+     * @return bool|string
+     */
+    private function getAnchorFromClassCollection($coll, $find)
+    {
+        foreach ($coll as $ns => $classes) {
+            foreach ($classes as $className) {
+                if ($className === $find) {
+                    return $this->getClassEntity($className)->generateAnchor();
+                }
+            }
+        }
+
+        return false;
+    }
 }

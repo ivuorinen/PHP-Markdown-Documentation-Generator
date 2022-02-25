@@ -1,33 +1,32 @@
 <?php
-namespace PHPDocsMD;
+
+namespace PHPDocsMD\Entities;
+
+use PHPDocsMD\DocInfoExtractor;
 
 /**
  * Class capable of creating ClassEntity objects
+ *
  * @package PHPDocsMD
  */
 class ClassEntityFactory
 {
-    /**
-     * @var DocInfoExtractor
-     */
-    private $docInfoExtractor;
+    private DocInfoExtractor $docInfoExtractor;
 
-    /**
-     * @param DocInfoExtractor $docInfoExtractor
-     */
     public function __construct(DocInfoExtractor $docInfoExtractor)
     {
         $this->docInfoExtractor = $docInfoExtractor;
     }
 
-    public function create(\ReflectionClass $reflection)
+    public function create(\ReflectionClass $reflection): ClassEntity
     {
         $class = new ClassEntity();
-        $docInfo = $this->docInfoExtractor->extractInfo($reflection);
-        $this->docInfoExtractor->applyInfoToEntity($reflection, $docInfo, $class);
         $class->isInterface($reflection->isInterface());
         $class->isAbstract($reflection->isAbstract());
         $class->setInterfaces(array_keys($reflection->getInterfaces()));
+
+        $docInfo = $this->docInfoExtractor->extractInfo($reflection);
+        $this->docInfoExtractor->applyInfoToEntity($reflection, $docInfo, $class);
         $class->hasIgnoreTag($docInfo->shouldBeIgnored());
         $class->hasInternalTag($docInfo->isInternal());
 
@@ -37,5 +36,4 @@ class ClassEntityFactory
 
         return $class;
     }
-
 }

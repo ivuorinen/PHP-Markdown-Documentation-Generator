@@ -1,8 +1,10 @@
 <?php
 
-class UseInspectorTest extends PHPUnit_Framework_TestCase {
+use PHPUnit\Framework\TestCase;
 
-    function testInspection()
+class UseInspectorTest extends TestCase
+{
+    public function testInspection()
     {
         $code = '
         Abra
@@ -23,7 +25,7 @@ class UseInspectorTest extends PHPUnit_Framework_TestCase {
         useBala;
         ';
 
-        $expected = array(
+        $expected = [
             '\\apa\\sten\\groda',
             '\\apa\\sten\\BjornGroda',
             '\\apa\\sten\\groda',
@@ -31,12 +33,10 @@ class UseInspectorTest extends PHPUnit_Framework_TestCase {
             '\\apa',
             '\\apa',
             '\\apa\\Sten',
-            '\\apa'
-        );
+            '\\apa',
+        ];
 
         $inspector = new \PHPDocsMD\UseInspector();
         $this->assertEquals($expected, $inspector->getUseStatementsInString($code));
     }
-
-
 }

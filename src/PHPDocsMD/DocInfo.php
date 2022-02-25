@@ -1,4 +1,5 @@
 <?php
+
 namespace PHPDocsMD;
 
 /**
@@ -9,107 +10,66 @@ namespace PHPDocsMD;
  */
 class DocInfo
 {
-    /**
-     * @var array
-     */
-    private $data = [];
+    private array $data;
 
-
-    /**
-     * @param array $data
-     */
-    public function __construct(array $data)
+    public function __construct(array $data = [])
     {
         $this->data = array_merge([
-            'return' => '',
-            'params' => [],
+            'return'      => '',
+            'params'      => [],
             'description' => '',
-            'example' => false,
-            'deprecated' => false,
-            'see' => []
+            'example'     => false,
+            'deprecated'  => false,
+            'see'         => [],
         ], $data);
     }
 
-    /**
-     * @return string
-     */
-    public function getReturnType()
+    public function getReturnType(): string
     {
         return $this->data['return'];
     }
 
-    /**
-     * @return array
-     */
-    public function getParameters()
+    public function getParameters(): array
     {
         return $this->data['params'];
     }
 
-    /**
-     * @param string $name
-     * @return array
-     */
-    public function getParameterInfo($name)
+    public function getParameterInfo(string $name): array
     {
-        if (isset($this->data['params'][$name])) {
-            return $this->data['params'][$name];
-        }
-        return [];
+        return $this->data['params'][ $name ] ?? [];
     }
 
-    /**
-     * @return string
-     */
-    public function getExample()
+    public function getExample(): string
     {
         return $this->data['example'];
     }
 
-    /**
-     * @return string
-     */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->data['description'];
     }
 
-    /**
-     * @return string
-     */
-    public function getDeprecationMessage()
+    public function getDeprecationMessage(): string
     {
         return $this->data['deprecated'];
     }
 
-    /**
-     * @return array
-     */
-    public function getSee()
+    public function getSee(): array
     {
         return $this->data['see'];
     }
 
-    /**
-     * @return bool
-     */
-    public function shouldInheritDoc()
+    public function shouldInheritDoc(): bool
     {
         return isset($this->data['inheritDoc']) || isset($this->data['inheritdoc']);
     }
 
-    /**
-     * @return bool
-     */
-    public function shouldBeIgnored()
+    public function shouldBeIgnored(): bool
     {
         return isset($this->data['ignore']);
     }
 
-    /**
-     * @return bool
-     */
-    public function isInternal()
+    public function isInternal(): bool
     {
         return isset($this->data['internal']);
     }

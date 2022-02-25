@@ -1,67 +1,47 @@
 <?php
+
 namespace PHPDocsMD;
 
 /**
+ * Utilities.
+ *
  * @package PHPDocsMD
  */
 class Utils
 {
-
-    /**
-     * @param string $name
-     * @return string
-     */
-    public static function sanitizeClassName($name)
-    {
-        return '\\'.trim($name, ' \\');
-    }
-
-    /**
-     * @param string $fullClassName
-     * @return string
-     */
-    public static function getClassBaseName($fullClassName)
+    public static function getClassBaseName(string $fullClassName): string
     {
         $parts = explode('\\', trim($fullClassName));
+
         return end($parts);
     }
 
-    /**
-     * @param string $typeDeclaration
-     * @param string $currentNameSpace
-     * @param string $delimiter
-     * @return string
-     */
-    public static function sanitizeDeclaration($typeDeclaration, $currentNameSpace, $delimiter='|')
-    {
+    public static function sanitizeDeclaration(
+        string $typeDeclaration,
+        string $currentNameSpace,
+        string $delimiter = '|'
+    ): string {
         $parts = explode($delimiter, $typeDeclaration);
-        foreach($parts as $i=>$p) {
+        foreach ($parts as $i => $p) {
             if (self::shouldPrefixWithNamespace($p)) {
                 $p = self::sanitizeClassName('\\' . trim($currentNameSpace, '\\') . '\\' . $p);
             } elseif (self::isClassReference($p)) {
                 $p = self::sanitizeClassName($p);
             }
-            $parts[$i] = $p;
+            $parts[ $i ] = $p;
         }
+
         return implode('/', $parts);
     }
 
-    /**
-     * @param string $typeDeclaration
-     * @return bool
-     */
-    private static function shouldPrefixWithNameSpace($typeDeclaration)
+    private static function shouldPrefixWithNameSpace(string $typeDeclaration): bool
     {
         return strpos($typeDeclaration, '\\') !== 0 && self::isClassReference($typeDeclaration);
     }
 
-    /**
-     * @param string $typeDeclaration
-     * @return bool
-     */
-    public static function isClassReference($typeDeclaration)
+    public static function isClassReference(string $typeDeclaration): bool
     {
-        $natives = [
+        $natives                  = [
             'mixed',
             'string',
             'int',
@@ -76,21 +56,28 @@ class Utils
             'null',
             'array',
             'void',
-            'callable'
+            'callable',
         ];
         $sanitizedTypeDeclaration = rtrim(trim(strtolower($typeDeclaration)), '[]');
 
-        return !in_array($sanitizedTypeDeclaration, $natives) &&
-            strpos($typeDeclaration, ' ') === false;
+        return ! in_array($sanitizedTypeDeclaration, $natives) &&
+               strpos($typeDeclaration, ' ') === false;
     }
 
-    public static function isNativeClassReference($typeDeclaration)
+    public static function sanitizeClassName(string $name): string
+    {
+        return '\\' . trim($name, ' \\');
+    }
+
+    public static function isNativeClassReference($typeDeclaration): bool
     {
         $sanitizedType = str_replace('[]', '', $typeDeclaration);
         if (Utils::isClassReference($typeDeclaration) && class_exists($sanitizedType, false)) {
             $reflectionClass = new \ReflectionClass($sanitizedType);
-            return !$reflectionClass->getFileName();
+
+            return ! $reflectionClass->getFileName();
         }
+
         return false;
     }
 }
