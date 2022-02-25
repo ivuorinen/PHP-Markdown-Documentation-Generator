@@ -21,7 +21,7 @@
     "homepage": "https://github.com/ivuorinen/PHP-Markdown-Documentation-Generator",
     "require": {
         "php": ">=7.4 || ^8.0 || ^8.1",
-        "symfony/console": "^6.0.3"
+        "symfony/console": "^5 || ^6"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.23.1",
