@@ -19,7 +19,7 @@ class ParamEntity extends CodeEntity
         return $this->default;
     }
 
-    public function setDefault($default): self
+    public function setDefault(string $default): self
     {
         $this->default = $default;
 

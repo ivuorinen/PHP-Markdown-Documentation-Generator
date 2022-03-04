@@ -1,6 +1,6 @@
 <?php
 
-namespace PHPDocsMD;
+namespace PHPDocsMD\Reflections;
 
 use PHPDocsMD\Entities\ClassEntity;
 

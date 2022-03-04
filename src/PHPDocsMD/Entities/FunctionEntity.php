@@ -19,37 +19,61 @@ class FunctionEntity extends CodeEntity
     private bool $isStatic = false;
     private string $class = '';
     private array $see = [];
+    private array $todo = [];
     private bool $isReturningNativeClass = false;
 
     public function isStatic(bool $toggle = null): bool
     {
         return $toggle === null
             ? $this->isStatic
-            : ($this->isStatic = (bool) $toggle);
+            : ($this->isStatic = $toggle);
+    }
+
+    /**
+     * @param bool $isStatic
+     * @return FunctionEntity
+     */
+    public function setIsStatic(bool $isStatic): \PHPDocsMD\Entities\FunctionEntity
+    {
+        $this->isStatic = $isStatic;
+        return $this;
     }
 
     public function isAbstract(bool $toggle = null): bool
     {
         return $toggle === null
             ? $this->abstract
-            : ($this->abstract = (bool) $toggle);
+            : ($this->abstract = $toggle);
+    }
+
+    /**
+     * @param bool $abstract
+     * @return \PHPDocsMD\Entities\FunctionEntity
+     */
+    public function setAbstract(bool $abstract): \PHPDocsMD\Entities\FunctionEntity
+    {
+        $this->abstract = $abstract;
+        return $this;
     }
 
     public function isReturningNativeClass(bool $toggle = null): bool
     {
         return $toggle === null
             ? $this->isReturningNativeClass
-            : ($this->isReturningNativeClass = (bool) $toggle);
+            : ($this->isReturningNativeClass = $toggle);
+    }
+
+    public function setIsReturningNativeClass(bool $isReturningNativeClass): FunctionEntity
+    {
+        $this->isReturningNativeClass = $isReturningNativeClass;
+        return $this;
     }
 
     public function hasParams(): bool
     {
-        return ! empty($this->params);
+        return !empty($this->params);
     }
 
-    /**
-     * @return \PHPDocsMD\Entities\ParamEntity[]
-     */
     public function getParams(): array
     {
         return $this->params;
@@ -58,7 +82,7 @@ class FunctionEntity extends CodeEntity
     /**
      * @param \PHPDocsMD\Entities\ParamEntity[] $params
      */
-    public function setParams(array $params): self
+    public function setParams(array $params): \PHPDocsMD\Entities\FunctionEntity
     {
         $this->params = $params;
 
@@ -70,7 +94,7 @@ class FunctionEntity extends CodeEntity
         return $this->returnType;
     }
 
-    public function setReturnType(string $returnType): self
+    public function setReturnType(string $returnType): \PHPDocsMD\Entities\FunctionEntity
     {
         $this->returnType = $returnType;
 
@@ -82,22 +106,19 @@ class FunctionEntity extends CodeEntity
         return $this->visibility;
     }
 
-    public function setVisibility(string $visibility): self
+    public function setVisibility(string $visibility): \PHPDocsMD\Entities\FunctionEntity
     {
         $this->visibility = $visibility;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getClass(): string
     {
         return $this->class;
     }
 
-    public function setClass(string $class): self
+    public function setClass(string $class): \PHPDocsMD\Entities\FunctionEntity
     {
         $this->class = $class;
 
@@ -109,10 +130,21 @@ class FunctionEntity extends CodeEntity
         return $this->see;
     }
 
-    public function setSee(array $see): self
+    public function setSee(array $see): \PHPDocsMD\Entities\FunctionEntity
     {
         $this->see = $see;
 
         return $this;
+    }
+
+    public function setTodo(array $todo): FunctionEntity
+    {
+        $this->todo = $todo;
+        return $this;
+    }
+
+    public function getTodo(): array
+    {
+        return $this->todo;
     }
 }

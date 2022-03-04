@@ -10,18 +10,19 @@ namespace PHPDocsMD;
  */
 class DocInfo
 {
+    public static array $defaultStructure = [
+        'return'      => '',
+        'params'      => [],
+        'description' => '',
+        'example'     => false,
+        'deprecated'  => false,
+        'see'         => [],
+    ];
     private array $data;
 
     public function __construct(array $data = [])
     {
-        $this->data = array_merge([
-            'return'      => '',
-            'params'      => [],
-            'description' => '',
-            'example'     => false,
-            'deprecated'  => false,
-            'see'         => [],
-        ], $data);
+        $this->data = array_merge(self::$defaultStructure, $data);
     }
 
     public function getReturnType(): string

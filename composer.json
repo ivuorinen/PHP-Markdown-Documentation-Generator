@@ -21,6 +21,7 @@
     "homepage": "https://github.com/ivuorinen/PHP-Markdown-Documentation-Generator",
     "require": {
         "php": ">=7.4 || ^8.0 || ^8.1",
+        "ext-json": "*",
         "symfony/console": "^5 || ^6"
     },
     "require-dev": {
@@ -28,7 +29,8 @@
         "friendsofphp/php-cs-fixer": "^3.6",
         "phpunit/phpunit": "^9",
         "roave/security-advisories": "dev-latest",
-        "squizlabs/php_codesniffer": "^3.6"
+        "squizlabs/php_codesniffer": "^3.6",
+        "vimeo/psalm": "^4.21"
     },
     "minimum-stability": "stable",
     "autoload": {
@@ -56,6 +58,7 @@
         "docs": "./bin/phpdoc-md generate src > docs.md",
         "lint": "vendor/bin/phpcs",
         "lint-fix": "vendor/bin/php-cs-fixer fix --rules @PSR2 .",
+        "psalm": "vendor/bin/psalm",
         "test": "vendor/bin/phpunit"
     }
 }

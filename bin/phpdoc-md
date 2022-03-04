@@ -6,8 +6,8 @@ $autoLoadPaths = [
     __DIR__ . '/../vendor/autoload.php',
     __DIR__ . '/../../../autoload.php',
 ];
-foreach ( $autoLoadPaths as $autoloader ) {
-    if ( file_exists( $autoloader ) ) {
+foreach ($autoLoadPaths as $autoloader) {
+    if (file_exists($autoloader)) {
         require $autoloader;
         break;
     }
@@ -18,8 +18,7 @@ use PHPDocsMD\Console\CLI;
 try {
     $cli = new CLI();
     $code = $cli->run();
-    exit( $code );
-}
-catch ( Exception $e ) {
-    exit( 2 );
+    exit($code);
+} catch (Exception $e) {
+    exit(2);
 }

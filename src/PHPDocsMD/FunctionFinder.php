@@ -3,7 +3,7 @@
 namespace PHPDocsMD;
 
 use PHPDocsMD\Entities\ClassEntity;
-use PHPDocsMD\Entities\FunctionEntity;
+use PHPDocsMD\Reflections\Reflector;
 
 /**
  * Find a specific function in a class or an array of classes
@@ -18,7 +18,7 @@ class FunctionFinder
      * @param string $methodName
      * @param array  $classes
      *
-     * @return bool|FunctionEntity
+     * @return bool|\PHPDocsMD\Entities\FunctionEntity
      */
     public function findInClasses(string $methodName, array $classes)
     {
@@ -33,10 +33,7 @@ class FunctionFinder
     }
 
     /**
-     * @param string $methodName
-     * @param string $className
-     *
-     * @return bool|FunctionEntity
+     * @return false|\PHPDocsMD\Entities\FunctionEntity
      */
     public function find(string $methodName, string $className)
     {

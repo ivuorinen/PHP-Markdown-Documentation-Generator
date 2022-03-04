@@ -30,7 +30,7 @@ class MyObject {
     * @param array $arr
     * @return Acme\OtherObject
     */
-   public function someFunc($str, $arr=array()) {
+   public function someFunc($str, $arr=[]) {
    
    }
 }

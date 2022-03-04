@@ -19,7 +19,7 @@ class DocInfoExtractor
     public function extractInfo($reflection): DocInfo
     {
         $comment = $this->getCleanDocComment($reflection);
-        $data    = $this->extractInfoFromComment($comment, $reflection);
+        $data = $this->extractInfoFromComment($comment, $reflection);
 
         return new DocInfo($data);
     }
@@ -31,15 +31,21 @@ class DocInfoExtractor
      */
     private function getCleanDocComment(\Reflector $reflection): string
     {
-        $comment = str_replace([ '/*', '*/' ], '', $reflection->getDocComment());
+        $comment = str_replace(['/*', '*/'], '', $reflection->getDocComment());
 
         return trim(trim(preg_replace('/([\s|^]\*\s)/', '', $comment)), '*');
     }
 
+    /**
+     * @param string $comment
+     * @param \ReflectionMethod|\ReflectionClass $reflection
+     * @param string $current_tag
+     * @return array|string[]
+     */
     private function extractInfoFromComment(string $comment, $reflection, string $current_tag = 'description'): array
     {
         $currentNamespace = $this->getNameSpace($reflection);
-        $tags             = [ $current_tag => '' ];
+        $tags = [$current_tag => ''];
 
         foreach (explode(PHP_EOL, $comment) as $line) {
             if ($current_tag !== 'example') {
@@ -53,24 +59,27 @@ class DocInfoExtractor
 
             if (strpos($words[0], '@') === false) {
                 // Append to tag
-                $joinWith             = $current_tag === 'example' ? PHP_EOL : ' ';
-                $tags[ $current_tag ] .= $joinWith . $line;
+                $joinWith = $current_tag === 'example' ? PHP_EOL : ' ';
+                $tags[$current_tag] .= $joinWith . $line;
             } elseif ($words[0] === '@param') {
                 // Get parameter declaration
                 if ($paramData = $this->figureOutParamDeclaration($words, $currentNamespace)) {
-                    [ $name, $data ] = $paramData;
-                    $tags['params'][ $name ] = $data;
+                    [$name, $data] = $paramData;
+                    $tags['params'][$name] = $data;
                 }
             } elseif ($words[0] === '@see') {
+                /** @psalm-suppress PossiblyInvalidOperand */
                 $tags['see'][] = $this->figureOutSeeDeclaration($words);
             } else {
                 // Start new tag
                 $current_tag = substr($words[0], 1);
                 array_splice($words, 0, 1);
-                if (empty($tags[ $current_tag ])) {
-                    $tags[ $current_tag ] = '';
+                if (empty($tags[$current_tag])) {
+                    $tags[$current_tag] = '';
                 }
-                $tags[ $current_tag ] .= trim(implode(' ', $words));
+
+                /** @psalm-suppress PossiblyInvalidOperand */
+                $tags[$current_tag] .= trim(implode(' ', $words));
             }
         }
 
@@ -78,11 +87,12 @@ class DocInfoExtractor
             if (is_array($val)) {
                 foreach ($val as $subName => $subVal) {
                     if (is_string($subVal)) {
-                        $tags[ $name ][ $subName ] = trim($subVal);
+                        /** @psalm-suppress InvalidArrayOffset */
+                        $tags[$name][$subName] = trim($subVal);
                     }
                 }
             } else {
-                $tags[ $name ] = trim($val);
+                $tags[$name] = trim($val);
             }
         }
 
@@ -101,11 +111,11 @@ class DocInfoExtractor
             : $reflection->getDeclaringClass()->getNamespaceName();
     }
 
-    private function getWordsFromLine($line): array
+    private function getWordsFromLine(string $line): array
     {
         $words = [];
         foreach (explode(' ', trim($line)) as $w) {
-            if (! empty($w)) {
+            if (!empty($w)) {
                 $words[] = $w;
             }
         }
@@ -113,11 +123,11 @@ class DocInfoExtractor
         return $words;
     }
 
-    private function figureOutParamDeclaration(array $words, string $currentNameSpace)
+    private function figureOutParamDeclaration(array $words, string $currentNameSpace): ?array
     {
         $description = '';
-        $type        = '';
-        $name        = '';
+        $type = '';
+        $name = '';
 
         if (isset($words[1]) && strpos($words[1], '$') === 0) {
             $name = $words[1];
@@ -129,33 +139,34 @@ class DocInfoExtractor
             array_splice($words, 0, 3);
         }
 
-        if (! empty($name)) {
+        if (!empty($name)) {
             $name = current(explode('=', $name));
             if (count($words) > 1) {
                 $description = implode(' ', $words);
             }
 
+            $name = (string)$name;
             $type = Utils::sanitizeDeclaration($type, $currentNameSpace);
 
             $data = [
                 'description' => $description,
-                'name'        => $name,
-                'type'        => $type,
-                'default'     => false,
+                'name' => $name,
+                'type' => $type,
+                'default' => false,
             ];
 
-            return [ $name, $data ];
+            return [$name, $data];
         }
 
-        return false;
+        return null;
     }
 
-    private function figureOutSeeDeclaration(array $words)
+    private function figureOutSeeDeclaration(array $words): ?string
     {
         array_shift($words);
 
-        if (! $words) {
-            $see = false;
+        if (!$words) {
+            $see = null;
         } elseif (preg_match('#^http://|^https://#', $words[0])) {
             $see = count($words) > 1
                 ? '[' . implode(' ', array_slice($words, 1)) . '](' . $words[0] . ')'
@@ -169,8 +180,8 @@ class DocInfoExtractor
 
     /**
      * @param \ReflectionClass|\ReflectionMethod $reflection
-     * @param DocInfo                            $docInfo
-     * @param CodeEntity                         $code
+     * @param DocInfo $docInfo
+     * @param CodeEntity $code
      */
     public function applyInfoToEntity($reflection, DocInfo $docInfo, CodeEntity $code): void
     {

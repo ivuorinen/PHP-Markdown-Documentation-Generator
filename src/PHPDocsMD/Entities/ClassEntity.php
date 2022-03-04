@@ -12,7 +12,7 @@ use PHPDocsMD\Utils;
 class ClassEntity extends CodeEntity
 {
     /**
-     * @var \PHPDocsMD\Entities\FunctionEntity[]
+     * @var FunctionEntity[]
      */
     private array $functions = [];
     private bool $isInterface = false;
@@ -22,27 +22,27 @@ class ClassEntity extends CodeEntity
     private string $extends = '';
     private array $interfaces = [];
     private array $see = [];
-    private bool $isNative;
+    private bool $isNative = false;
 
     public function hasIgnoreTag(bool $toggle = null): bool
     {
         return $toggle === null
             ? $this->hasIgnoreTag
-            : ($this->hasIgnoreTag = (bool) $toggle);
+            : ($this->hasIgnoreTag = (bool)$toggle);
     }
 
     public function hasInternalTag(bool $toggle = null): bool
     {
         return $toggle === null
             ? $this->hasInternalTag
-            : ($this->hasInternalTag = (bool) $toggle);
+            : ($this->hasInternalTag = (bool)$toggle);
     }
 
     public function isNative(bool $toggle = null): bool
     {
         return $toggle === null
             ? $this->isNative
-            : ($this->isNative = (bool) $toggle);
+            : ($this->isNative = (bool)$toggle);
     }
 
     public function getExtends(): string
@@ -93,7 +93,7 @@ class ClassEntity extends CodeEntity
     }
 
     /**
-     * @param \PHPDocsMD\Entities\FunctionEntity[] $functions
+     * @param FunctionEntity[] $functions
      */
     public function setFunctions(array $functions): self
     {
@@ -134,8 +134,8 @@ class ClassEntity extends CodeEntity
 
         return strtolower(
             str_replace(
-                [ ':', ' ', '\\', '(', ')' ],
-                [ '', '-', '', '', '' ],
+                [':', ' ', '\\', '(', ')'],
+                ['', '-', '', '', ''],
                 $title
             )
         );
@@ -152,7 +152,7 @@ class ClassEntity extends CodeEntity
     {
         $translate = [
             '%label%' => $this->isInterface() ? 'Interface' : 'Class',
-            '%name%'  => substr_count($this->getName(), '\\') === 1
+            '%name%' => substr_count($this->getName(), '\\') === 1
                 ? substr($this->getName(), 1)
                 : $this->getName(),
             '%extra%' => '',
@@ -165,7 +165,7 @@ class ClassEntity extends CodeEntity
                 $translate['%extra%'] = '(abstract)';
             }
         } else {
-            $translate['%extra%'] = $this->isAbstract() && ! $this->isInterface() ? '(abstract)' : '';
+            $translate['%extra%'] = $this->isAbstract() && !$this->isInterface() ? '(abstract)' : '';
         }
 
         return trim(strtr($format, $translate));
@@ -175,13 +175,13 @@ class ClassEntity extends CodeEntity
     {
         return $toggle === null
             ? $this->isInterface
-            : ($this->isInterface = (bool) $toggle);
+            : ($this->isInterface = (bool)$toggle);
     }
 
     public function isAbstract(bool $toggle = null): bool
     {
         return $toggle === null
             ? $this->abstract
-            : ($this->abstract = (bool) $toggle);
+            : ($this->abstract = (bool)$toggle);
     }
 }

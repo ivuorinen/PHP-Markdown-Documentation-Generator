@@ -1,14 +1,14 @@
 <?php
 
 use PHPDocsMD\Entities\FunctionEntity;
-use PHPDocsMD\Reflector;
+use PHPDocsMD\Reflections\Reflector;
 use PHPUnit\Framework\TestCase;
 
 class ReflectorTest extends TestCase
 {
 
     /**
-     * @var \PHPDocsMD\Reflector
+     * @var \PHPDocsMD\Reflections\Reflector
      */
     private Reflector $reflector;
 
@@ -122,7 +122,7 @@ class ReflectorTest extends TestCase
         $this->assertEquals(false, $params[0]->getDefault());
         $this->assertEquals('$arg', $params[0]->getName());
         $this->assertEquals('mixed', $params[0]->getType());
-        $this->assertEquals('array()', $params[1]->getDefault());
+        $this->assertEquals('[]', $params[1]->getDefault());
         $this->assertEquals('$arr', $params[1]->getName());
         $this->assertEquals('array', $params[1]->getType());
         $this->assertEquals('null', $params[2]->getDefault());

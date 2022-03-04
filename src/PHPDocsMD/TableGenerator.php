@@ -36,7 +36,7 @@ interface TableGenerator
     public function openTable();
 
     /**
-     * Toggle whether or not methods being abstract (or part of an interface)
+     * Toggle whether methods being abstract (or part of an interface)
      * should be declared as abstract in the table
      *
      * @param bool $toggle

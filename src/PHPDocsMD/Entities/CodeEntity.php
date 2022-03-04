@@ -17,37 +17,20 @@ class CodeEntity
     private string $example = '';
     private array $see = [];
 
-    /**
-     * @param bool|null $toggle
-     *
-     * @return void|bool
-     */
-    public function isDeprecated(bool $toggle = null)
+    public function isDeprecated(bool $toggle = null): bool
     {
-        if ($toggle === null) {
-            return $this->isDeprecated;
-        } else {
-            return $this->isDeprecated = (bool) $toggle;
-        }
+        return $toggle === null
+            ? $this->isDeprecated
+            : ($this->isDeprecated = $toggle);
     }
 
-    /**
-     * @param bool|null $toggle
-     *
-     * @return bool|null
-     */
-    public function isInternal(bool $toggle = null)
+    public function isInternal(bool $toggle = null): ?bool
     {
-        if ($toggle === null) {
-            return $this->isInternal;
-        } else {
-            return $this->isInternal = (bool) $toggle;
-        }
+        return $toggle === null
+            ? $this->isInternal
+            : ($this->isInternal = $toggle);
     }
 
-    /**
-     * @return string
-     */
     public function getDescription(): string
     {
         return $this->description;

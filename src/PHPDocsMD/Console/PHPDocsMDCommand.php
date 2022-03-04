@@ -3,7 +3,7 @@
 namespace PHPDocsMD\Console;
 
 use PHPDocsMD\MDTableGenerator;
-use PHPDocsMD\Reflector;
+use PHPDocsMD\Reflections\Reflector;
 use PHPDocsMD\TableGenerator;
 use PHPDocsMD\Utils;
 use Symfony\Component\Console\Input\InputArgument;
@@ -101,27 +101,27 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
     }
 
     /**
-     * @param InputInterface  $input
+     * @param InputInterface $input
      * @param OutputInterface $output
      *
-     * @return int|null
+     * @return int
      * @throws \InvalidArgumentException
      */
-    protected function execute(InputInterface $input, OutputInterface $output): ?int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $classes                = $input->getArgument(self::ARG_CLASS);
-        $bootstrap              = $input->getOption(self::OPT_BOOTSTRAP);
-        $ignore                 = explode(',', $input->getOption(self::OPT_IGNORE));
+        $classes = $input->getArgument(self::ARG_CLASS);
+        $bootstrap = $input->getOption(self::OPT_BOOTSTRAP);
+        $ignore = explode(',', $input->getOption(self::OPT_IGNORE));
         $this->visibilityFilter = empty($input->getOption(self::OPT_VISIBILITY))
-            ? [ 'public', 'protected', 'abstract', 'final' ]
+            ? ['public', 'protected', 'abstract', 'final']
             : array_map(
                 'trim',
                 preg_split('/\\s*,\\s*/', $input->getOption(self::OPT_VISIBILITY))
             );
-        $this->methodRegex      = $input->getOption(self::OPT_METHOD_REGEX) ?: false;
-        $includeSee             = $input->getOption(self::OPT_SEE);
-        $noInternal             = $input->getOption(self::OPT_NO_INTERNAL);
-        $requestingOneClass     = false;
+        $this->methodRegex = $input->getOption(self::OPT_METHOD_REGEX) ?: false;
+        $includeSee = $input->getOption(self::OPT_SEE);
+        $noInternal = $input->getOption(self::OPT_NO_INTERNAL);
+        $requestingOneClass = false;
 
         if ($bootstrap) {
             require_once strpos($bootstrap, '/') === 0 ? $bootstrap : getcwd() . '/' . $bootstrap;
@@ -135,7 +135,7 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
                 }
             }
         } elseif (class_exists($classes) || interface_exists($classes) || trait_exists($classes)) {
-            $classCollection[]  = [ $classes ];
+            $classCollection[] = [$classes];
             $requestingOneClass = true;
         } elseif (is_dir($classes)) {
             $classCollection = $this->findClassesInDir($classes, [], $ignore);
@@ -144,18 +144,18 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
         }
 
         $tableGeneratorSlug = $input->getOption(self::OPT_TABLE_GENERATOR);
-        $tableGenerator     = $this->buildTableGenerator($tableGeneratorSlug);
+        $tableGenerator = $this->buildTableGenerator($tableGeneratorSlug);
 
         $tableOfContent = [];
-        $body           = [];
-        $classLinks     = [];
+        $body = [];
+        $classLinks = [];
 
         foreach ($classCollection as $classes) {
             foreach ($classes as $className) {
                 $class = $this->getClassEntity($className);
 
                 if ($class->hasIgnoreTag()
-                     || ($class->hasInternalTag() && $noInternal)) {
+                    || ($class->hasInternalTag() && $noInternal)) {
                     continue;
                 }
 
@@ -166,31 +166,31 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
                     $class->generateAnchor()
                 );
 
-                $classLinks[ $class->getName() ] = '#' . $class->generateAnchor();
+                $classLinks[$class->getName()] = '#' . $class->generateAnchor();
 
                 // generate function table
                 $tableGenerator->openTable();
-                $tableGenerator->doDeclareAbstraction(! $class->isInterface());
+                $tableGenerator->doDeclareAbstraction(!$class->isInterface());
                 foreach ($class->getFunctions() as $func) {
                     if ($noInternal && $func->isInternal()) {
                         continue;
                     }
                     if ($func->isReturningNativeClass()) {
-                        $link                                 = sprintf(
+                        $link = sprintf(
                             'https://php.net/manual/en/class.%s.php',
                             strtolower(
-                                str_replace([ '[]', '\\' ], '', $func->getReturnType())
+                                str_replace(['[]', '\\'], '', $func->getReturnType())
                             )
                         );
-                        $classLinks[ $func->getReturnType() ] = $link;
+                        $classLinks[$func->getReturnType()] = $link;
                     }
                     foreach ($func->getParams() as $param) {
                         if ($param->getNativeClassType()) {
-                            $link                                       = sprintf(
+                            $link = sprintf(
                                 'https://php.net/manual/en/class.%s.php',
-                                strtolower(str_replace([ '[]', '\\', ], '', $param->getNativeClassType()))
+                                strtolower(str_replace(['[]', '\\',], '', $param->getNativeClassType()))
                             );
-                            $classLinks[ $param->getNativeClassType() ] = $link;
+                            $classLinks[$param->getNativeClassType()] = $link;
                         }
                     }
                     $tableGenerator->addFunc($func, $includeSee);
@@ -199,13 +199,13 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
                 $docs = (
                     $requestingOneClass
                     ? ''
-                    : '<hr /><a id="' . trim($classLinks[ $class->getName() ], '#') . '"></a>' .
-                      PHP_EOL . PHP_EOL
+                    : '<hr /><a id="' . trim($classLinks[$class->getName()], '#') . '"></a>' .
+                    PHP_EOL . PHP_EOL
                 );
 
                 if ($class->isDeprecated()) {
                     $docs .= '### <del>' . $class->generateTitle() . '</del>' . PHP_EOL . PHP_EOL .
-                             '> **DEPRECATED** ' . $class->getDeprecationMessage() . PHP_EOL . PHP_EOL;
+                        '> **DEPRECATED** ' . $class->getDeprecationMessage() . PHP_EOL . PHP_EOL;
                 } else {
                     $docs .= '### ' . $class->generateTitle() . PHP_EOL . PHP_EOL;
                     if ($class->getDescription()) {
@@ -221,11 +221,15 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
                 }
 
                 if ($example = $class->getExample()) {
-                    $docs .= sprintf(
+                    $line = sprintf(
                         '###### Example%s%s',
                         PHP_EOL,
                         MDTableGenerator::formatExampleComment($example)
-                    ) . PHP_EOL . PHP_EOL;
+                    );
+
+                    $docs .= $line .
+                        PHP_EOL .
+                        PHP_EOL;
                 }
 
                 $docs .= $tableGenerator->getTable() . PHP_EOL . PHP_EOL;
@@ -245,17 +249,20 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
                 if ($interfaces = $class->getInterfaces()) {
                     $interfaceNames = [];
                     foreach ($interfaces as $interface) {
-                        $anchor           = $this->getAnchorFromClassCollection(
+                        $anchor = $this->getAnchorFromClassCollection(
                             $classCollection,
                             $interface
                         );
-                        $interfaceNames[] = $anchor ? sprintf('[%s](#%s) ', $interface, $anchor)
+                        $interfaceNames[] = $anchor
+                            ? sprintf('[%s](#%s) ', $interface, $anchor)
                             : $interface;
                     }
-                    $docs .= PHP_EOL . sprintf(
-                        '*This class implements %s*',
-                        implode(', ', $interfaceNames)
-                    ) . PHP_EOL;
+                    $docs .= PHP_EOL .
+                        sprintf(
+                            '*This class implements %s*',
+                            implode(', ', $interfaceNames)
+                        ) .
+                        PHP_EOL;
                 }
 
                 $body[] = $docs;
@@ -266,7 +273,7 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
             throw new \InvalidArgumentException('No classes found');
         }
 
-        if (! $requestingOneClass) {
+        if (!$requestingOneClass) {
             $output->writeln('## Table of contents' . PHP_EOL);
             $output->writeln(implode(PHP_EOL, $tableOfContent));
         }
@@ -274,11 +281,11 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
         // Convert references to classes into links
         asort($classLinks);
         $classLinks = array_reverse($classLinks, true);
-        $docString  = implode(PHP_EOL, $body);
+        $docString = implode(PHP_EOL, $body);
         foreach ($classLinks as $className => $url) {
-            $link      = sprintf('[%s](%s) ', $className, $url);
-            $find      = [ '<em>' . $className, '/' . $className ];
-            $replace   = [ '<em>' . $link, '/' . $link ];
+            $link = sprintf('[%s](%s) ', $className, $url);
+            $find = ['<em>' . $className, '/' . $className];
+            $replace = ['<em>' . $link, '/' . $link];
             $docString = str_replace($find, $replace, $docString);
         }
 
@@ -291,18 +298,20 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
     {
         foreach (new \FilesystemIterator($dir) as $f) {
             /** @var \SplFileInfo $f */
-            if ($f->isFile() && ! $f->isLink()) {
-                [ $ns, $className ] = $this->findClassInFile($f->getRealPath());
-                if ($className && (class_exists(
-                    $className,
-                    true
-                ) || interface_exists($className) || trait_exists($className))) {
-                    $collection[ $ns ][] = $className;
+            if ($f->isFile() && !$f->isLink()) {
+                [$ns, $className] = $this->findClassInFile($f->getRealPath());
+                if ($className &&
+                    (
+                        class_exists($className, true) ||
+                        interface_exists($className) ||
+                        trait_exists($className)
+                    )
+                ) {
+                    $collection[$ns][] = $className;
                 }
-            } elseif ($f->isDir() && ! $f->isLink() && ! $this->shouldIgnoreDirectory(
-                $f->getFilename(),
-                $ignores
-            )) {
+            } elseif ($f->isDir() &&
+                !$f->isLink() &&
+                !$this->shouldIgnoreDirectory($f->getFilename(), $ignores)) {
                 $collection = $this->findClassesInDir($f->getRealPath(), $collection);
             }
         }
@@ -313,24 +322,27 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
 
     private function findClassInFile(string $file): array
     {
-        $ns    = '';
+        $ns = '';
         $class = false;
+
         foreach (explode(PHP_EOL, file_get_contents($file)) as $line) {
-            if (strpos($line, '*') === false) {
-                if (strpos($line, 'namespace') !== false) {
-                    $ns = trim(current(array_slice(explode('namespace', $line), 1)), '; ');
-                    $ns = Utils::sanitizeClassName($ns);
-                } elseif (strpos($line, 'class') !== false) {
-                    $class = $this->extractClassNameFromLine('class', $line);
-                    break;
-                } elseif (strpos($line, 'interface') !== false) {
-                    $class = $this->extractClassNameFromLine('interface', $line);
-                    break;
-                }
+            if (strpos($line, '*') !== false) {
+                continue;
+            }
+
+            if (strpos($line, 'namespace') !== false) {
+                $ns = trim(current(array_slice(explode('namespace', $line), 1)), '; ');
+                $ns = Utils::sanitizeClassName($ns);
+            } elseif (strpos($line, 'class') !== false) {
+                $class = $this->extractClassNameFromLine('class', $line);
+                break;
+            } elseif (strpos($line, 'interface') !== false) {
+                $class = $this->extractClassNameFromLine('interface', $line);
+                break;
             }
         }
 
-        return $class ? [ $ns, $ns . '\\' . $class ] : [ false, false ];
+        return $class ? [$ns, $ns . '\\' . $class] : [false, false];
     }
 
     public function extractClassNameFromLine(string $type, string $line): string
@@ -340,17 +352,11 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
         return trim(current(explode(' ', $class)));
     }
 
-    /**
-     * @param $dirName
-     * @param $ignores
-     *
-     * @return bool
-     */
-    private function shouldIgnoreDirectory($dirName, $ignores): bool
+    private function shouldIgnoreDirectory(string $dirName, array $ignores): bool
     {
         foreach ($ignores as $dir) {
             $dir = trim($dir);
-            if (! empty($dir) && substr($dirName, - 1 * strlen($dir)) === $dir) {
+            if (!empty($dir) && substr($dirName, -1 * strlen($dir)) === $dir) {
                 return true;
             }
         }
@@ -358,12 +364,16 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
         return false;
     }
 
-    protected function buildTableGenerator($tableGeneratorSlug = 'default')
+    protected function buildTableGenerator(string $tableGeneratorSlug = 'default'): object
     {
         if (class_exists($tableGeneratorSlug)) {
-            if (! in_array(TableGenerator::class, class_implements($tableGeneratorSlug), true)) {
-                throw new \InvalidArgumentException('The table generator class should implement the ' .
-                                                     TableGenerator::class . ' interface.');
+            if (!in_array(TableGenerator::class, class_implements($tableGeneratorSlug), true)) {
+                throw new \InvalidArgumentException(
+                    sprintf(
+                        'The table generator class should implement the %s interface.',
+                        TableGenerator::class
+                    )
+                );
             }
 
             return new $tableGeneratorSlug();
@@ -373,41 +383,30 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
             'default' => MDTableGenerator::class,
         ];
 
-        $class = $map[ $tableGeneratorSlug ] ?? $map['default'];
+        $class = $map[$tableGeneratorSlug] ?? $map['default'];
 
         return new $class();
     }
 
-    /**
-     * @param $name
-     *
-     * @return \PHPDocsMD\Entities\ClassEntity
-     */
-    private function getClassEntity($name): \PHPDocsMD\Entities\ClassEntity
+    private function getClassEntity(string $name): \PHPDocsMD\Entities\ClassEntity
     {
-        if (! isset($this->memory[ $name ])) {
+        if (!isset($this->memory[$name])) {
             $reflector = new Reflector($name);
-            if (! empty($this->visibilityFilter)) {
+            if (!empty($this->visibilityFilter)) {
                 $reflector->setVisibilityFilter($this->visibilityFilter);
             }
-            if (! empty($this->methodRegex)) {
+            if (!empty($this->methodRegex)) {
                 $reflector->setMethodRegex($this->methodRegex);
             }
-            $this->memory[ $name ] = $reflector->getClassEntity();
+            $this->memory[$name] = $reflector->getClassEntity();
         }
 
-        return $this->memory[ $name ];
+        return $this->memory[$name];
     }
 
-    /**
-     * @param $coll
-     * @param $find
-     *
-     * @return bool|string
-     */
-    private function getAnchorFromClassCollection($coll, $find)
+    private function getAnchorFromClassCollection(array $coll, string $find): ?string
     {
-        foreach ($coll as $ns => $classes) {
+        foreach ($coll as $classes) {
             foreach ($classes as $className) {
                 if ($className === $find) {
                     return $this->getClassEntity($className)->generateAnchor();
@@ -415,6 +414,6 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
             }
         }
 
-        return false;
+        return null;
     }
 }

@@ -13,14 +13,22 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class CLI extends Application
 {
+    /**
+     * @throws \JsonException
+     */
     public function __construct()
     {
-        $json = json_decode(file_get_contents(__DIR__ . '/../../../composer.json'), false);
+        $json = json_decode(
+            file_get_contents(__DIR__ . '/../../../composer.json'),
+            false,
+            512,
+            JSON_THROW_ON_ERROR
+        );
         parent::__construct('PHP Markdown Documentation Generator', $json->version ?? 'No version');
     }
 
     /**
-     * @param \Symfony\Component\Console\Input\InputInterface|null   $input
+     * @param \Symfony\Component\Console\Input\InputInterface|null $input
      * @param \Symfony\Component\Console\Output\OutputInterface|null $output
      *
      * @return int

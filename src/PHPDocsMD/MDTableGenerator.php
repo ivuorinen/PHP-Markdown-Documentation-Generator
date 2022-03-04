@@ -38,16 +38,18 @@ class MDTableGenerator implements TableGenerator
      */
     public function appendExamplesToEndOfTable(bool $toggle): void
     {
-        $this->appendExamples = (bool) $toggle;
+        $this->appendExamples = (bool)$toggle;
     }
 
     /**
      * Begin generating a new markdown-formatted table
+     *
+     * @return void
      */
     public function openTable(): void
     {
-        $this->examples           = [];
-        $this->markdown           = ''; // Clear table
+        $this->examples = [];
+        $this->markdown = ''; // Clear table
         $this->declareAbstraction = true;
         $this->add('| Visibility | Function |');
         $this->add('|:-----------|:---------|');
@@ -59,26 +61,19 @@ class MDTableGenerator implements TableGenerator
     }
 
     /**
-     * Toggle whether or not methods being abstract (or part of an interface)
+     * Toggle whether methods being abstract (or part of an interface)
      * should be declared as abstract in the table
-     *
-     * @param bool $toggle
      */
-    public function doDeclareAbstraction(bool $toggle)
+    public function doDeclareAbstraction(bool $toggle): void
     {
-        $this->declareAbstraction = (bool) $toggle;
+        $this->declareAbstraction = (bool)$toggle;
     }
 
     /**
      * Generates a markdown formatted table row with information about given function. Then adds the
      * row to the table and returns the markdown formatted string.
-     *
-     * @param FunctionEntity $func
-     * @param bool           $see
-     *
-     * @return string
      */
-    public function addFunc(FunctionEntity $func, $includeSee = false): string
+    public function addFunc(FunctionEntity $func, bool $includeSee = false): string
     {
         $this->fullClassName = $func->getClass();
 
@@ -108,24 +103,24 @@ class MDTableGenerator implements TableGenerator
         $str .= '</strong> : <em>' . $func->getReturnType() . '</em>';
 
         if ($func->isDeprecated()) {
-            $str = '<strike>' . $str . '</strike>';
+            $str = '<del>' . $str . '</del>';
             $str .= '<br /><em>DEPRECATED - ' . $func->getDeprecationMessage() . '</em>';
         } elseif ($func->getDescription()) {
             $str .= '<br /><em>' . $func->getDescription() . '</em>';
         }
         if ($func->getSee() && $includeSee) {
             $str .= '<br /><em>&nbsp;&nbsp;&nbsp;&nbsp;See: ' .
-                    implode(', ', $func->getSee()) . '</em>';
+                implode(', ', $func->getSee()) . '</em>';
         }
 
         $str = str_replace(
-            [ '</strong><strong>', '</strong></strong> ' ],
-            [ '', '</strong>' ],
+            ['</strong><strong>', '</strong></strong> '],
+            ['', '</strong>'],
             trim($str)
         );
 
         if ($func->getExample()) {
-            $this->examples[ $func->getName() ] = $func->getExample();
+            $this->examples[$func->getName()] = $func->getExample();
         }
 
         $firstCol = $func->getVisibility() . ($func->isStatic() ? ' static' : '');
@@ -142,7 +137,7 @@ class MDTableGenerator implements TableGenerator
     public function getTable(): string
     {
         $tbl = trim($this->markdown);
-        if ($this->appendExamples && ! empty($this->examples)) {
+        if ($this->appendExamples && !empty($this->examples)) {
             $className = Utils::getClassBaseName($this->fullClassName);
             foreach ($this->examples as $funcName => $example) {
                 $tbl .= sprintf(
@@ -189,17 +184,17 @@ class MDTableGenerator implements TableGenerator
     }
 
     /**
-     * @param $example
+     * @param string $example
      *
      * @return mixed
      */
-    private static function stripCodeTags($example)
+    private static function stripCodeTags(string $example)
     {
         if (strpos($example, '<code') !== false) {
-            $parts   = array_slice(explode('</code>', $example), - 2);
-            $example = current($parts);
-            $parts   = array_slice(explode('<code>', $example), 1);
-            $example = current($parts);
+            $parts = array_slice(explode('</code>', $example), -2);
+            $example = (string)current($parts);
+            $parts = array_slice(explode('<code>', $example), 1);
+            $example = (string)current($parts);
         }
 
         return $example;

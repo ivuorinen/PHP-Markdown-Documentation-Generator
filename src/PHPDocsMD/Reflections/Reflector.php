@@ -1,12 +1,18 @@
 <?php
 
-namespace PHPDocsMD;
+namespace PHPDocsMD\Reflections;
 
+use PHPDocsMD\DocInfo;
+use PHPDocsMD\DocInfoExtractor;
 use PHPDocsMD\Entities\ClassEntity;
 use PHPDocsMD\Entities\ClassEntityFactory;
 use PHPDocsMD\Entities\FunctionEntity;
 use PHPDocsMD\Entities\ParamEntity;
+use PHPDocsMD\FunctionFinder;
+use PHPDocsMD\UseInspector;
+use PHPDocsMD\Utils;
 use ReflectionMethod;
+use function count;
 
 /**
  * Class that can compute ClassEntity objects out of real classes
@@ -23,13 +29,6 @@ class Reflector implements ReflectorInterface
     private array $visibilityFilter = [];
     private string $methodRegex = '';
 
-    /**
-     * @param string                                      $className
-     * @param \PHPDocsMD\FunctionFinder|null              $functionFinder
-     * @param \PHPDocsMD\DocInfoExtractor|null            $docInfoExtractor
-     * @param \PHPDocsMD\UseInspector|null                $useInspector
-     * @param \PHPDocsMD\Entities\ClassEntityFactory|null $classEntityFactory
-     */
     public function __construct(
         string $className,
         FunctionFinder $functionFinder = null,
@@ -37,10 +36,10 @@ class Reflector implements ReflectorInterface
         UseInspector $useInspector = null,
         ClassEntityFactory $classEntityFactory = null
     ) {
-        $this->className          = $className;
-        $this->functionFinder     = $this->loadIfNull($functionFinder, FunctionFinder::class);
-        $this->docInfoExtractor   = $this->loadIfNull($docInfoExtractor, DocInfoExtractor::class);
-        $this->useInspector       = $this->loadIfNull($useInspector, UseInspector::class);
+        $this->className = $className;
+        $this->functionFinder = $this->loadIfNull($functionFinder, FunctionFinder::class);
+        $this->docInfoExtractor = $this->loadIfNull($docInfoExtractor, DocInfoExtractor::class);
+        $this->useInspector = $this->loadIfNull($useInspector, UseInspector::class);
         $this->classEntityFactory = $this->loadIfNull(
             $classEntityFactory,
             ClassEntityFactory::class,
@@ -48,41 +47,47 @@ class Reflector implements ReflectorInterface
         );
     }
 
-    private function loadIfNull($obj, $className, $in = null)
+    /**
+     * @param ClassEntityFactory|DocInfoExtractor|FunctionFinder|UseInspector|null $obj
+     * @param string $className
+     * @param null|object $in
+     *
+     * @return object
+     */
+    private function loadIfNull($obj, string $className, ?object $in = null): object
     {
         return is_object($obj) ? $obj : new $className($in);
     }
 
-    public function getClassEntity(): ClassEntity
+    /**
+     * @return \PHPDocsMD\Entities\ClassEntity
+     * @throws \ReflectionException
+     */
+    public function getClassEntity(): \PHPDocsMD\Entities\ClassEntity
     {
         $classReflection = new \ReflectionClass($this->className);
-        $classEntity     = $this->classEntityFactory->create($classReflection);
+        $classEntity = $this->classEntityFactory->create($classReflection);
 
         $classEntity->setFunctions($this->getClassFunctions($classEntity, $classReflection));
 
         return $classEntity;
     }
 
-    /**
-     * @param ClassEntity      $classEntity
-     * @param \ReflectionClass $reflectionClass
-     *
-     * @return FunctionEntity[]
-     */
     private function getClassFunctions(
         ClassEntity $classEntity,
         \ReflectionClass $reflectionClass
     ): array {
         $classUseStatements = $this->useInspector->getUseStatements($reflectionClass);
-        $publicFunctions    = [];
+        $publicFunctions = [];
         $protectedFunctions = [];
-        $methodReflections  = [];
+        $methodReflections = [];
 
         if (count($this->visibilityFilter) === 0) {
             $methodReflections = $reflectionClass->getMethods();
         } else {
             foreach ($this->visibilityFilter as $filter) {
-                $methodReflections[] = $reflectionClass->getMethods($this->translateVisibilityFilter($filter));
+                $visibility = $this->translateVisibilityFilter($filter);
+                $methodReflections[] = $reflectionClass->getMethods($visibility);
             }
             $methodReflections = array_merge(...$methodReflections);
         }
@@ -104,11 +109,11 @@ class Reflector implements ReflectorInterface
                 $classUseStatements
             );
 
-            if ($func) {
+            if ($func instanceof FunctionEntity) {
                 if ($func->getVisibility() === 'public') {
-                    $publicFunctions[ $func->getName() ] = $func;
+                    $publicFunctions[$func->getName()] = $func;
                 } else {
-                    $protectedFunctions[ $func->getName() ] = $func;
+                    $protectedFunctions[$func->getName()] = $func;
                 }
             }
         }
@@ -119,23 +124,19 @@ class Reflector implements ReflectorInterface
         return array_values(array_merge($publicFunctions, $protectedFunctions));
     }
 
-    private function translateVisibilityFilter($filter)
+    private function translateVisibilityFilter(string $filter = null): int
     {
         $map = [
-            'public'    => ReflectionMethod::IS_PUBLIC,
+            'public' => ReflectionMethod::IS_PUBLIC,
             'protected' => ReflectionMethod::IS_PROTECTED,
-            'abstract'  => ReflectionMethod::IS_ABSTRACT,
-            'final'     => ReflectionMethod::IS_FINAL,
+            'abstract' => ReflectionMethod::IS_ABSTRACT,
+            'final' => ReflectionMethod::IS_FINAL,
         ];
 
-        return $map[ $filter ] ?? null;
+        return $map[$filter] ?? ReflectionMethod::IS_PUBLIC;
     }
 
     /**
-     * @param ReflectionMethod $method
-     * @param ClassEntity      $class
-     * @param array            $useStatements
-     *
      * @return bool|FunctionEntity
      */
     protected function createFunctionEntity(
@@ -143,7 +144,7 @@ class Reflector implements ReflectorInterface
         ClassEntity $class,
         array $useStatements
     ) {
-        $func    = new FunctionEntity();
+        $func = new FunctionEntity();
         $docInfo = $this->docInfoExtractor->extractInfo($method);
         $this->docInfoExtractor->applyInfoToEntity($method, $docInfo, $func);
 
@@ -156,13 +157,15 @@ class Reflector implements ReflectorInterface
         }
 
         $returnType = $this->getReturnType($docInfo, $method, $func, $useStatements);
-        $func->setReturnType($returnType);
-        $func->setParams($this->getParams($method, $docInfo));
-        $func->isStatic($method->isStatic());
-        $func->setVisibility($method->isPublic() ? 'public' : 'protected');
-        $func->isAbstract($method->isAbstract());
-        $func->setClass($class->getName());
-        $func->isReturningNativeClass(Utils::isNativeClassReference($returnType));
+
+        $func
+            ->setReturnType($returnType)
+            ->setParams($this->getParams($method, $docInfo))
+            ->setIsStatic($method->isStatic())
+            ->setVisibility($method->isPublic() ? 'public' : 'protected')
+            ->setAbstract($method->isAbstract())
+            ->setClass($class->getName())
+            ->setIsReturningNativeClass(Utils::isNativeClassReference($returnType));
 
         return $func;
     }
@@ -171,23 +174,25 @@ class Reflector implements ReflectorInterface
         FunctionEntity $func,
         ClassEntity $class
     ): FunctionEntity {
-        $funcName                 = $func->getName();
+        $funcName = $func->getName();
         $inheritedFuncDeclaration = $this->functionFinder->find(
             $funcName,
             $class->getExtends()
         );
-        if (! $inheritedFuncDeclaration) {
+
+        if (!$inheritedFuncDeclaration) {
             $inheritedFuncDeclaration = $this->functionFinder->findInClasses(
                 $funcName,
                 $class->getInterfaces()
             );
-            if (! $inheritedFuncDeclaration) {
+            if (!($inheritedFuncDeclaration instanceof FunctionEntity)) {
                 throw new \RuntimeException(
                     'Function ' . $funcName . ' tries to inherit docs but no parent method is found'
                 );
             }
         }
-        if (! $func->isAbstract() && ! $class->isAbstract() && $inheritedFuncDeclaration->isAbstract()) {
+
+        if (!$func->isAbstract() && !$class->isAbstract() && $inheritedFuncDeclaration->isAbstract()) {
             $inheritedFuncDeclaration->isAbstract(false);
         }
 
@@ -200,8 +205,8 @@ class Reflector implements ReflectorInterface
         ClassEntity $class
     ): bool {
         return $info->shouldBeIgnored() ||
-               $method->isPrivate() ||
-               ! $class->isSame($method->getDeclaringClass()->getName());
+            $method->isPrivate() ||
+            !$class->isSame($method->getDeclaringClass()->getName());
     }
 
     private function getReturnType(
@@ -211,16 +216,33 @@ class Reflector implements ReflectorInterface
         array $useStatements
     ): string {
         $returnType = $docInfo->getReturnType();
-        if (empty($returnType)) {
-            $returnType = $this->guessReturnTypeFromFuncName($func->getName());
-        } elseif (Utils::isClassReference($returnType) && ! $this->classExists($returnType)) {
-            $isReferenceToArrayOfObjects = substr($returnType, - 2) === '[]' ? '[]' : '';
-            if ($isReferenceToArrayOfObjects) {
-                $returnType = substr($returnType, 0, - 2);
+
+        if ($returnType === 'self' || $returnType === $method->getName()) {
+            $returnType = $func->getName();
+        }
+
+        if ($func->getReturnType() !== $returnType && $method->hasReturnType()) {
+            /** @var \ReflectionNamedType|null $name */
+            $name = $method->getReturnType();
+            $name = ($name === null) ? $returnType : $name->getName();
+
+            if ($name !== 'self' && \PHPDocsMD\Utils::isNativeType($name)) {
+                $returnType = $name;
+            } else {
+                $returnType = $name === 'self' ? '\\' . $method->class : '\\' . $name;
             }
-            $className = $this->stripAwayNamespace($returnType);
+        }
+
+        if (empty($returnType)) {
+            $returnType = $this->guessReturnTypeFromFuncName($func->getName(), $method);
+        } elseif (Utils::isClassReference($returnType) && !$this->classExists($returnType)) {
+            $isReferenceToArrayOfObjects = substr($returnType, -2) === '[]' ? '[]' : '';
+            if ($isReferenceToArrayOfObjects) {
+                $returnType = substr($returnType, 0, -2);
+            }
+            $strippedClassName = $this->stripAwayNamespace($returnType);
             foreach ($useStatements as $usedClass) {
-                if ($this->stripAwayNamespace($usedClass) === $className) {
+                if ($this->stripAwayNamespace($usedClass) === $strippedClassName) {
                     $returnType = $usedClass;
                     break;
                 }
@@ -236,10 +258,16 @@ class Reflector implements ReflectorInterface
         );
     }
 
-    private function guessReturnTypeFromFuncName(string $name): string
+    private function guessReturnTypeFromFuncName(string $name, ReflectionMethod $method): string
     {
-        $mixed = [ 'get', 'load', 'fetch', 'find', 'create' ];
-        $bool  = [ 'is', 'can', 'has', 'have', 'should' ];
+        /** @var \ReflectionNamedType|null $methodReturnType */
+        $methodReturnType = $method->getReturnType();
+        if ($name === 'self' && $methodReturnType !== null) {
+            return $methodReturnType->getName();
+        }
+
+        $mixed = ['get', 'load', 'fetch', 'find', 'create'];
+        $bool = ['is', 'can', 'has', 'have', 'should'];
         foreach ($mixed as $prefix) {
             if (strpos($name, $prefix) === 0) {
                 return 'mixed';
@@ -268,8 +296,8 @@ class Reflector implements ReflectorInterface
     {
         $params = [];
         foreach ($method->getParameters() as $param) {
-            $paramName                   = '$' . $param->getName();
-            $params[ $param->getName() ] = $this->createParameterEntity(
+            $paramName = '$' . $param->getName();
+            $params[$param->getName()] = $this->createParameterEntity(
                 $param,
                 $docInfo->getParameterInfo($paramName)
             );
@@ -280,7 +308,7 @@ class Reflector implements ReflectorInterface
 
     /**
      * @param \ReflectionParameter $reflection
-     * @param array                $docs
+     * @param array $docs
      *
      * @return \PHPDocsMD\Entities\ParamEntity
      * @todo Turn this into a class "FunctionEntityFactory"
@@ -288,15 +316,15 @@ class Reflector implements ReflectorInterface
     private function createParameterEntity(\ReflectionParameter $reflection, array $docs): ParamEntity
     {
         // need to use slash instead of pipe or md-generation will get it wrong
-        $def          = false;
-        $type         = 'mixed';
+        $def = false;
+        $type = 'mixed';
         $declaredType = self::getParamType($reflection);
-        if (! isset($docs['type'])) {
+        if (!isset($docs['type'])) {
             $docs['type'] = '';
         }
 
         if ($declaredType && $declaredType !== $docs['type'] &&
-            ! ($declaredType === 'array' && substr($docs['type'], - 2) === '[]')) {
+            !($declaredType === 'array' && substr($docs['type'], -2) === '[]')) {
             if ($declaredType && $docs['type']) {
                 $posClassA = Utils::getClassBaseName($docs['type']);
                 $posClassB = Utils::getClassBaseName($declaredType);
@@ -315,7 +343,7 @@ class Reflector implements ReflectorInterface
         }
 
         try {
-            $def  = $reflection->getDefaultValue();
+            $def = $reflection->getDefaultValue();
             $type = $this->getTypeFromVal($def);
             if (is_string($def)) {
                 $def = "`'$def'`";
@@ -324,7 +352,7 @@ class Reflector implements ReflectorInterface
             } elseif (is_null($def)) {
                 $def = 'null';
             } elseif (is_array($def)) {
-                $def = 'array()';
+                $def = '[]';
             }
         } catch (\Exception $e) {
             // Pass.
@@ -332,14 +360,14 @@ class Reflector implements ReflectorInterface
 
         $varName = '$' . $reflection->getName();
 
-        if (! empty($docs)) {
+        if (!empty($docs)) {
             $docs['default'] = $def;
             if ($type === 'mixed' && $def === 'null' && strpos($docs['type'], '\\') === 0) {
                 $type = false;
             }
 
             if ($type && $def &&
-                ! empty($docs['type']) &&
+                !empty($docs['type']) &&
                 $docs['type'] !== $type &&
                 strpos($docs['type'], '|') === false) {
                 if (substr($docs['type'], strpos($docs['type'], '\\')) ===
@@ -354,9 +382,9 @@ class Reflector implements ReflectorInterface
         } else {
             $docs = [
                 'descriptions' => '',
-                'name'         => $varName,
-                'default'      => $def,
-                'type'         => $type,
+                'name' => $varName,
+                'default' => $def,
+                'type' => $type,
             ];
         }
 
@@ -366,7 +394,7 @@ class Reflector implements ReflectorInterface
         $param->setDefault($docs['default']);
         $param->setType(empty($docs['type'])
             ? 'mixed'
-            : str_replace([ '|', '\\\\' ], [ '/', '\\' ], $docs['type']));
+            : str_replace(['|', '\\\\'], ['/', '\\'], $docs['type']));
 
         return $param;
     }
@@ -395,7 +423,7 @@ class Reflector implements ReflectorInterface
      */
     public static function getParamType(\ReflectionParameter $refParam): string
     {
-        $export = str_replace(' or NULL', '', (string) $refParam);
+        $export = str_replace(' or NULL', '', (string)$refParam);
 
         $type = preg_replace(
             '/.*?([\w\\\]+)\s+\$' . current(explode('=', $refParam->name)) . '.*/',
@@ -413,6 +441,10 @@ class Reflector implements ReflectorInterface
         return $type;
     }
 
+    /**
+     * @param string|bool|array|mixed $def
+     * @return string
+     */
     private function getTypeFromVal($def): string
     {
         if (is_string($def)) {
@@ -437,7 +469,7 @@ class Reflector implements ReflectorInterface
         return $this;
     }
 
-    public function setMethodRegex($methodRegex): self
+    public function setMethodRegex(string $methodRegex): self
     {
         $this->methodRegex = $methodRegex;
 
