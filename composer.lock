@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "98090609d13631db9d813598db802925",
+    "content-hash": "fe5ad3aaf6e37f9429de114a6d425c23",
     "packages": [
         {
             "name": "psr/container",
@@ -2800,16 +2800,16 @@
         },
         {
             "name": "phpunit/php-code-coverage",
-            "version": "9.2.14",
+            "version": "9.2.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "9f4d60b6afe5546421462b76cd4e633ebc364ab4"
+                "reference": "2e9da11878c4202f97915c1cb4bb1ca318a63f5f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/9f4d60b6afe5546421462b76cd4e633ebc364ab4",
-                "reference": "9f4d60b6afe5546421462b76cd4e633ebc364ab4",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/2e9da11878c4202f97915c1cb4bb1ca318a63f5f",
+                "reference": "2e9da11878c4202f97915c1cb4bb1ca318a63f5f",
                 "shasum": ""
             },
             "require": {
@@ -2865,7 +2865,7 @@
             ],
             "support": {
                 "issues": "https://github.com/sebastianbergmann/php-code-coverage/issues",
-                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/9.2.14"
+                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/9.2.15"
             },
             "funding": [
                 {
@@ -2873,7 +2873,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-02-28T12:38:02+00:00"
+            "time": "2022-03-07T09:28:20+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -3118,16 +3118,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "9.5.16",
+            "version": "9.5.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "5ff8c545a50226c569310a35f4fa89d79f1ddfdc"
+                "reference": "5c5abcfaa2cbd44b2203995d7a339ef910fe0c8f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/5ff8c545a50226c569310a35f4fa89d79f1ddfdc",
-                "reference": "5ff8c545a50226c569310a35f4fa89d79f1ddfdc",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/5c5abcfaa2cbd44b2203995d7a339ef910fe0c8f",
+                "reference": "5c5abcfaa2cbd44b2203995d7a339ef910fe0c8f",
                 "shasum": ""
             },
             "require": {
@@ -3205,7 +3205,7 @@
             ],
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.5.16"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.5.17"
             },
             "funding": [
                 {
@@ -3217,7 +3217,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-02-23T17:10:58+00:00"
+            "time": "2022-03-05T16:54:31+00:00"
         },
         {
             "name": "psr/cache",
@@ -3374,12 +3374,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "47b2a4d89d38ff95a69cba4cd03a7e1025b3abfe"
+                "reference": "6c48c3048166dc4142a1a5f28a325faed3a578a3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/47b2a4d89d38ff95a69cba4cd03a7e1025b3abfe",
-                "reference": "47b2a4d89d38ff95a69cba4cd03a7e1025b3abfe",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/6c48c3048166dc4142a1a5f28a325faed3a578a3",
+                "reference": "6c48c3048166dc4142a1a5f28a325faed3a578a3",
                 "shasum": ""
             },
             "conflict": {
@@ -3450,6 +3450,7 @@
                 "drupal/drupal": ">=7,<7.80|>=8,<8.9.16|>=9,<9.1.12|>=9.2,<9.2.4",
                 "dweeves/magmi": "<=0.7.24",
                 "ecodev/newsletter": "<=4",
+                "ectouch/ectouch": "<=2.7.2",
                 "elgg/elgg": "<3.3.24|>=4,<4.0.5",
                 "endroid/qr-code-bundle": "<3.4.2",
                 "enshrined/svg-sanitize": "<0.15",
@@ -3822,7 +3823,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-03-03T14:09:02+00:00"
+            "time": "2022-03-05T18:49:45+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -5010,16 +5011,16 @@
         },
         {
             "name": "symfony/filesystem",
-            "version": "v5.4.5",
+            "version": "v5.4.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
-                "reference": "797680071ea8f71b94eb958680c50d0e002638f5"
+                "reference": "d53a45039974952af7f7ebc461ccdd4295e29440"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/797680071ea8f71b94eb958680c50d0e002638f5",
-                "reference": "797680071ea8f71b94eb958680c50d0e002638f5",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/d53a45039974952af7f7ebc461ccdd4295e29440",
+                "reference": "d53a45039974952af7f7ebc461ccdd4295e29440",
                 "shasum": ""
             },
             "require": {
@@ -5054,7 +5055,7 @@
             "description": "Provides basic utilities for the filesystem",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/filesystem/tree/v5.4.5"
+                "source": "https://github.com/symfony/filesystem/tree/v5.4.6"
             },
             "funding": [
                 {
@@ -5070,7 +5071,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-02-27T10:31:47+00:00"
+            "time": "2022-03-02T12:42:23+00:00"
         },
         {
             "name": "symfony/finder",
@@ -5681,7 +5682,8 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.4 || ^8.0 || ^8.1"
+        "php": ">=7.4 || ^8.0 || ^8.1",
+        "ext-json": "*"
     },
     "platform-dev": [],
     "plugin-api-version": "2.2.0"
