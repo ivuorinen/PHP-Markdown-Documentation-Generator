@@ -28,12 +28,12 @@ interface TableGenerator
      *
      * @param bool $toggle
      */
-    public function appendExamplesToEndOfTable(bool $toggle);
+    public function appendExamplesToEndOfTable(bool $toggle): void;
 
     /**
      * Begin generating a new markdown-formatted table
      */
-    public function openTable();
+    public function openTable(): void;
 
     /**
      * Toggle whether methods being abstract (or part of an interface)
@@ -41,7 +41,7 @@ interface TableGenerator
      *
      * @param bool $toggle
      */
-    public function doDeclareAbstraction(bool $toggle);
+    public function doDeclareAbstraction(bool $toggle): void;
 
     /**
      * Generates a markdown formatted table row with information about given function. Then adds the

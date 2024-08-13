@@ -2,6 +2,9 @@
 
 namespace PHPDocsMD\Console;
 
+use FilesystemIterator;
+use InvalidArgumentException;
+use PHPDocsMD\Entities\ClassEntity;
 use PHPDocsMD\MDTableGenerator;
 use PHPDocsMD\Reflections\Reflector;
 use PHPDocsMD\TableGenerator;
@@ -124,11 +127,11 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
         $requestingOneClass = false;
 
         if ($bootstrap) {
-            require_once strpos($bootstrap, '/') === 0 ? $bootstrap : getcwd() . '/' . $bootstrap;
+            require_once str_starts_with($bootstrap, '/') ? $bootstrap : getcwd() . '/' . $bootstrap;
         }
 
         $classCollection = [];
-        if (strpos($classes, ',') !== false) {
+        if (str_contains($classes, ',')) {
             foreach (explode(',', $classes) as $class) {
                 if (class_exists($class) || interface_exists($class) || trait_exists($class)) {
                     $classCollection[0][] = $class;
@@ -140,7 +143,7 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
         } elseif (is_dir($classes)) {
             $classCollection = $this->findClassesInDir($classes, [], $ignore);
         } else {
-            throw new \InvalidArgumentException('Given input is neither a class nor a source directory');
+            throw new InvalidArgumentException('Given input is neither a class nor a source directory');
         }
 
         $tableGeneratorSlug = $input->getOption(self::OPT_TABLE_GENERATOR);
@@ -154,8 +157,7 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
             foreach ($classes as $className) {
                 $class = $this->getClassEntity($className);
 
-                if ($class->hasIgnoreTag()
-                    || ($class->hasInternalTag() && $noInternal)) {
+                if ($class->hasIgnoreTag() || ($class->hasInternalTag() && $noInternal)) {
                     continue;
                 }
 
@@ -270,7 +272,7 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
         }
 
         if (empty($tableOfContent)) {
-            throw new \InvalidArgumentException('No classes found');
+            throw new InvalidArgumentException('No classes found');
         }
 
         if (!$requestingOneClass) {
@@ -296,7 +298,7 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
 
     private function findClassesInDir(string $dir, array $collection = [], array $ignores = []): array
     {
-        foreach (new \FilesystemIterator($dir) as $f) {
+        foreach (new FilesystemIterator($dir) as $f) {
             /** @var \SplFileInfo $f */
             if ($f->isFile() && !$f->isLink()) {
                 [$ns, $className] = $this->findClassInFile($f->getRealPath());
@@ -311,7 +313,8 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
                 }
             } elseif ($f->isDir() &&
                 !$f->isLink() &&
-                !$this->shouldIgnoreDirectory($f->getFilename(), $ignores)) {
+                !$this->shouldIgnoreDirectory($f->getFilename(), $ignores)
+            ) {
                 $collection = $this->findClassesInDir($f->getRealPath(), $collection);
             }
         }
@@ -326,17 +329,17 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
         $class = false;
 
         foreach (explode(PHP_EOL, file_get_contents($file)) as $line) {
-            if (strpos($line, '*') !== false) {
+            if (str_contains($line, '*')) {
                 continue;
             }
 
-            if (strpos($line, 'namespace') !== false) {
+            if (str_contains($line, 'namespace')) {
                 $ns = trim(current(array_slice(explode('namespace', $line), 1)), '; ');
                 $ns = Utils::sanitizeClassName($ns);
-            } elseif (strpos($line, 'class') !== false) {
+            } elseif (str_contains($line, 'class')) {
                 $class = $this->extractClassNameFromLine('class', $line);
                 break;
-            } elseif (strpos($line, 'interface') !== false) {
+            } elseif (str_contains($line, 'interface')) {
                 $class = $this->extractClassNameFromLine('interface', $line);
                 break;
             }
@@ -356,7 +359,7 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
     {
         foreach ($ignores as $dir) {
             $dir = trim($dir);
-            if (!empty($dir) && substr($dirName, -1 * strlen($dir)) === $dir) {
+            if (!empty($dir) && str_ends_with($dirName, $dir)) {
                 return true;
             }
         }
@@ -368,7 +371,7 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
     {
         if (class_exists($tableGeneratorSlug)) {
             if (!in_array(TableGenerator::class, class_implements($tableGeneratorSlug), true)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     sprintf(
                         'The table generator class should implement the %s interface.',
                         TableGenerator::class
@@ -388,7 +391,7 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
         return new $class();
     }
 
-    private function getClassEntity(string $name): \PHPDocsMD\Entities\ClassEntity
+    private function getClassEntity(string $name): ClassEntity
     {
         if (!isset($this->memory[$name])) {
             $reflector = new Reflector($name);

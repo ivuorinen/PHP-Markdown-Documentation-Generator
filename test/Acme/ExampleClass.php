@@ -173,7 +173,7 @@ class ClassWithStaticFunc
     /**
      * @return float
      */
-    public static function somStaticFunc()
+    public static function someStaticFunc()
     {
     }
 }

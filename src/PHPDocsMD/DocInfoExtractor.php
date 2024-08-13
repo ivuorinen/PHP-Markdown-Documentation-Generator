@@ -3,6 +3,8 @@
 namespace PHPDocsMD;
 
 use PHPDocsMD\Entities\CodeEntity;
+use ReflectionClass;
+use ReflectionMethod;
 
 /**
  * Class that can extract information from a function/class comment
@@ -12,11 +14,11 @@ use PHPDocsMD\Entities\CodeEntity;
 class DocInfoExtractor
 {
     /**
-     * @param \ReflectionClass|\ReflectionMethod $reflection
+     * @param \ReflectionMethod|\ReflectionClass $reflection
      *
      * @return DocInfo
      */
-    public function extractInfo($reflection): DocInfo
+    public function extractInfo(ReflectionMethod|ReflectionClass $reflection): DocInfo
     {
         $comment = $this->getCleanDocComment($reflection);
         $data = $this->extractInfoFromComment($comment, $reflection);
@@ -37,13 +39,17 @@ class DocInfoExtractor
     }
 
     /**
-     * @param string $comment
+     * @param string                             $comment
      * @param \ReflectionMethod|\ReflectionClass $reflection
-     * @param string $current_tag
+     * @param string                             $current_tag
+     *
      * @return array|string[]
      */
-    private function extractInfoFromComment(string $comment, $reflection, string $current_tag = 'description'): array
-    {
+    private function extractInfoFromComment(
+        string $comment,
+        ReflectionMethod|ReflectionClass $reflection,
+        string $current_tag = 'description'
+    ): array {
         $currentNamespace = $this->getNameSpace($reflection);
         $tags = [$current_tag => ''];
 
@@ -57,7 +63,7 @@ class DocInfoExtractor
                 continue;
             }
 
-            if (strpos($words[0], '@') === false) {
+            if (!str_contains($words[0], '@')) {
                 // Append to tag
                 $joinWith = $current_tag === 'example' ? PHP_EOL : ' ';
                 $tags[$current_tag] .= $joinWith . $line;
@@ -100,13 +106,13 @@ class DocInfoExtractor
     }
 
     /**
-     * @param \ReflectionClass|\ReflectionMethod $reflection
+     * @param \ReflectionMethod|\ReflectionClass $reflection
      *
      * @return string
      */
-    private function getNameSpace($reflection): string
+    private function getNameSpace(ReflectionMethod|ReflectionClass $reflection): string
     {
-        return $reflection instanceof \ReflectionClass
+        return $reflection instanceof ReflectionClass
             ? $reflection->getNamespaceName()
             : $reflection->getDeclaringClass()->getNamespaceName();
     }
@@ -129,13 +135,12 @@ class DocInfoExtractor
         $type = '';
         $name = '';
 
-        if (isset($words[1]) && strpos($words[1], '$') === 0) {
+        if (isset($words[1]) && str_starts_with($words[1], '$')) {
             $name = $words[1];
             $type = 'mixed';
             array_splice($words, 0, 2);
         } elseif (isset($words[2])) {
-            $name = $words[2];
-            $type = $words[1];
+            [$type, $name] = $words;
             array_splice($words, 0, 3);
         }
 
@@ -145,7 +150,6 @@ class DocInfoExtractor
                 $description = implode(' ', $words);
             }
 
-            $name = (string)$name;
             $type = Utils::sanitizeDeclaration($type, $currentNameSpace);
 
             $data = [
@@ -179,12 +183,15 @@ class DocInfoExtractor
     }
 
     /**
-     * @param \ReflectionClass|\ReflectionMethod $reflection
-     * @param DocInfo $docInfo
-     * @param CodeEntity $code
+     * @param \ReflectionMethod|\ReflectionClass $reflection
+     * @param DocInfo                            $docInfo
+     * @param CodeEntity                         $code
      */
-    public function applyInfoToEntity($reflection, DocInfo $docInfo, CodeEntity $code): void
-    {
+    public function applyInfoToEntity(
+        ReflectionMethod|ReflectionClass $reflection,
+        DocInfo $docInfo,
+        CodeEntity $code
+    ): void {
         $code->setName($reflection->getName());
         $code->setDescription($docInfo->getDescription());
         $code->setExample($docInfo->getExample());

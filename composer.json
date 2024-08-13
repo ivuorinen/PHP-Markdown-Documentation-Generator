@@ -20,7 +20,7 @@
     ],
     "homepage": "https://github.com/ivuorinen/PHP-Markdown-Documentation-Generator",
     "require": {
-        "php": ">=7.4 || ^8.0 || ^8.1",
+        "php": "^8.2",
         "ext-json": "*",
         "symfony/console": "^5 || ^6"
     },

@@ -1,5 +1,6 @@
 <?php
 
+use PHPDocsMD\Entities\ClassEntity;
 use PHPDocsMD\Entities\FunctionEntity;
 use PHPDocsMD\Reflections\Reflector;
 use PHPUnit\Framework\TestCase;
@@ -15,9 +16,12 @@ class ReflectorTest extends TestCase
     /**
      * @var \PHPDocsMD\Entities\ClassEntity
      */
-    private \PHPDocsMD\Entities\ClassEntity $class;
+    private ClassEntity $class;
 
-    public function testClass()
+    /**
+     * @throws \ReflectionException
+     */
+    public function testClass(): void
     {
         $this->assertEquals('\\Acme\\ExampleClass', $this->class->getName());
         $this->assertEquals('This is a description of this class', $this->class->getDescription());
@@ -38,20 +42,20 @@ class ReflectorTest extends TestCase
         $this->assertTrue($class->hasIgnoreTag());
     }
 
-    public function testFunctions()
+    public function testFunctions(): void
     {
         $functions = $this->class->getFunctions();
 
         $this->assertNotEmpty($functions);
 
         $this->assertEquals('Description of a*a', $functions[0]->getDescription());
-        $this->assertEquals(false, $functions[0]->isDeprecated());
+        $this->assertFalse($functions[0]->isDeprecated());
         $this->assertEquals('funcA', $functions[0]->getName());
         $this->assertEquals('void', $functions[0]->getReturnType());
         $this->assertEquals('public', $functions[0]->getVisibility());
 
         $this->assertEquals('Description of b', $functions[1]->getDescription());
-        $this->assertEquals(false, $functions[1]->isDeprecated());
+        $this->assertFalse($functions[1]->isDeprecated());
         $this->assertEquals('funcB', $functions[1]->getName());
         $this->assertEquals('void', $functions[1]->getReturnType());
         $this->assertEquals('public', $functions[1]->getVisibility());
@@ -60,7 +64,7 @@ class ReflectorTest extends TestCase
         $this->assertEquals('funcD', $functions[2]->getName());
         $this->assertEquals('void', $functions[2]->getReturnType());
         $this->assertEquals('public', $functions[2]->getVisibility());
-        $this->assertEquals(false, $functions[2]->isDeprecated());
+        $this->assertFalse($functions[2]->isDeprecated());
 
         // These function does not declare return type but the return
         // type should be guessable
@@ -72,7 +76,7 @@ class ReflectorTest extends TestCase
 
         // Protected function have been put last
         $this->assertEquals('Description of c', $functions[6]->getDescription());
-        $this->assertEquals(true, $functions[6]->isDeprecated());
+        $this->assertTrue($functions[6]->isDeprecated());
         $this->assertEquals('This one is deprecated', $functions[6]->getDeprecationMessage());
         $this->assertEquals('funcC', $functions[6]->getName());
         $this->assertEquals('\\Acme\\ExampleClass', $functions[6]->getReturnType());
@@ -81,25 +85,31 @@ class ReflectorTest extends TestCase
         $this->assertTrue(empty($functions[7])); // Should be skipped since tagged with @ignore */
     }
 
-    public function testStaticFunc()
+    /**
+     * @throws \ReflectionException
+     */
+    public function testStaticFunc(): void
     {
         $reflector = new Reflector('Acme\\ClassWithStaticFunc');
         $functions = $reflector->getClassEntity()->getFunctions();
         $this->assertNotEmpty($functions);
         $this->assertEquals('', $functions[0]->getDescription());
-        $this->assertEquals(false, $functions[0]->isDeprecated());
-        $this->assertEquals(true, $functions[0]->isStatic());
+        $this->assertFalse($functions[0]->isDeprecated());
+        $this->assertTrue($functions[0]->isStatic());
         $this->assertEquals('', $functions[0]->getDeprecationMessage());
-        $this->assertEquals('somStaticFunc', $functions[0]->getName());
+        $this->assertEquals('someStaticFunc', $functions[0]->getName());
         $this->assertEquals('public', $functions[0]->getVisibility());
         $this->assertEquals('float', $functions[0]->getReturnType());
     }
 
-    public function testParams()
+    /**
+     * @throws \ReflectionException
+     */
+    public function testParams(): void
     {
-        $paramA = new ReflectionParameter([ 'Acme\\ExampleClass', 'funcD' ], 2);
-        $paramB = new ReflectionParameter([ 'Acme\\ExampleClass', 'funcD' ], 3);
-        $paramC = new ReflectionParameter([ 'Acme\\ExampleClass', 'funcD' ], 0);
+        $paramA = new ReflectionParameter(['Acme\\ExampleClass', 'funcD'], 2);
+        $paramB = new ReflectionParameter(['Acme\\ExampleClass', 'funcD'], 3);
+        $paramC = new ReflectionParameter(['Acme\\ExampleClass', 'funcD'], 0);
 
         $typeA = Reflector::getParamType($paramA);
         $typeB = Reflector::getParamType($paramB);
@@ -115,7 +125,7 @@ class ReflectorTest extends TestCase
         $this->assertFalse($functions[5]->hasParams());
 
         $params = $functions[1]->getParams();
-        $this->assertEquals('int', $params[0]->getType());
+        $this->assertEquals('mixed', $params[0]->getType());
 
         $params = $functions[2]->getParams();
         $this->assertEquals(4, count($params));
@@ -130,11 +140,14 @@ class ReflectorTest extends TestCase
         $this->assertEquals('\\Acme\\ExampleInterface', $params[2]->getType());
     }
 
-    public function testInheritedDocs()
+    /**
+     * @throws \ReflectionException
+     */
+    public function testInheritedDocs(): void
     {
         $reflector = new Reflector('Acme\\ClassImplementingInterface');
         $functions = $reflector->getClassEntity()->getFunctions();
-        $this->assertEquals(4, count($functions));
+        $this->assertCount(4, $functions);
         $this->assertEquals('aMethod', $functions[0]->getName());
         $this->assertEquals('int', $functions[0]->getReturnType());
         $this->assertFalse($functions[0]->isReturningNativeClass());
@@ -146,7 +159,10 @@ class ReflectorTest extends TestCase
         $this->assertTrue($functions[3]->isReturningNativeClass());
     }
 
-    public function testReferenceToImportedClass()
+    /**
+     * @throws \ReflectionException
+     */
+    public function testReferenceToImportedClass(): void
     {
         $reflector = new Reflector('Acme\\InterfaceReferringToImportedClass');
         $functions = $reflector->getClassEntity()->getFunctions();
@@ -154,25 +170,27 @@ class ReflectorTest extends TestCase
         $this->assertEquals('\\PHPDocsMD\\Console\\CLI[]', $functions[0]->getReturnType());
     }
 
-    public function visibilityFiltersAndExpectedMethods()
+    public function visibilityFiltersAndExpectedMethods(): array
     {
         return [
             'public'               => [
-                [ 'public' ], [ 'funcA', 'funcB', 'funcD', 'getFunc', 'hasFunc', 'isFunc' ],
+                ['public'],
+                ['funcA', 'funcB', 'funcD', 'getFunc', 'hasFunc', 'isFunc'],
             ],
-            'protected'            => [ [ 'protected' ], [ 'funcC' ] ],
+            'protected'            => [['protected'], ['funcC']],
             'public-and-protected' => [
-                [ 'public', 'protected' ],
-                [ 'funcA', 'funcB', 'funcD', 'getFunc', 'hasFunc', 'isFunc', 'funcC' ],
+                ['public', 'protected'],
+                ['funcA', 'funcB', 'funcD', 'getFunc', 'hasFunc', 'isFunc', 'funcC'],
             ],
-            'abstract'             => [ [ 'abstract' ], [ 'isFunc' ] ],
+            'abstract'             => [['abstract'], ['isFunc']],
         ];
     }
 
     /**
      * @dataProvider visibilityFiltersAndExpectedMethods
+     * @throws \ReflectionException
      */
-    public function testVisibilityBasedFiltering(array $visibilityFilter, array $expectedMethods)
+    public function testVisibilityBasedFiltering(array $visibilityFilter, array $expectedMethods): void
     {
         $reflector = new Reflector('Acme\\ExampleClass');
         $reflector->setVisibilityFilter($visibilityFilter);
@@ -186,21 +204,23 @@ class ReflectorTest extends TestCase
         $this->assertEquals($expectedMethods, $functionNames);
     }
 
-    public function regexFiltersAndExpectedMethods()
+    public function regexFiltersAndExpectedMethods(): array
     {
         return [
-            'has-only'              => [ '/^has/', [ 'hasFunc' ] ],
+            'has-only'              => ['/^has/', ['hasFunc']],
             'does-not-start-with-h' => [
-                '/^[^h]/', [ 'funcA', 'funcB', 'funcD', 'getFunc', 'isFunc', 'funcC' ],
+                '/^[^h]/',
+                ['funcA', 'funcB', 'funcD', 'getFunc', 'isFunc', 'funcC'],
             ],
-            'func-letter-only'      => [ '/^func[A-Z]/', [ 'funcA', 'funcB', 'funcD', 'funcC' ] ],
+            'func-letter-only'      => ['/^func[A-Z]/', ['funcA', 'funcB', 'funcD', 'funcC']],
         ];
     }
 
     /**
      * @dataProvider regexFiltersAndExpectedMethods
+     * @throws \ReflectionException
      */
-    public function testMethodRegexFiltering($regexFilter, $expectedMethods)
+    public function testMethodRegexFiltering($regexFilter, $expectedMethods): void
     {
         $reflector = new Reflector('Acme\\ExampleClass');
         $reflector->setMethodRegex($regexFilter);
@@ -214,9 +234,12 @@ class ReflectorTest extends TestCase
         $this->assertEquals($expectedMethods, $functionNames);
     }
 
-    protected function setUp() : void
+    /**
+     * @throws \ReflectionException
+     */
+    protected function setUp(): void
     {
-        require_once __DIR__ . '/Acme/ExampleClass.php';
+        // require_once __DIR__ . '/Acme/ExampleClass.php';
         $this->reflector = new Reflector('Acme\\ExampleClass');
         $this->class     = $this->reflector->getClassEntity();
     }

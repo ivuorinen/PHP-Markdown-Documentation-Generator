@@ -19,8 +19,9 @@ class FunctionFinder
      * @param array  $classes
      *
      * @return bool|\PHPDocsMD\Entities\FunctionEntity
+     * @throws \ReflectionException
      */
-    public function findInClasses(string $methodName, array $classes)
+    public function findInClasses(string $methodName, array $classes): bool|Entities\FunctionEntity
     {
         foreach ($classes as $className) {
             $function = $this->find($methodName, $className);
@@ -34,8 +35,9 @@ class FunctionFinder
 
     /**
      * @return false|\PHPDocsMD\Entities\FunctionEntity
+     * @throws \ReflectionException
      */
-    public function find(string $methodName, string $className)
+    public function find(string $methodName, string $className): bool|Entities\FunctionEntity
     {
         if ($className) {
             $classEntity = $this->loadClassEntity($className);
@@ -53,13 +55,16 @@ class FunctionFinder
         return false;
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     private function loadClassEntity(string $className): ClassEntity
     {
-        if (empty($this->cache[ $className ])) {
+        if (empty($this->cache[$className])) {
             $reflector                 = new Reflector($className, $this);
-            $this->cache[ $className ] = $reflector->getClassEntity();
+            $this->cache[$className] = $reflector->getClassEntity();
         }
 
-        return $this->cache[ $className ];
+        return $this->cache[$className];
     }
 }
