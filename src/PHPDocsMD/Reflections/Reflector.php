@@ -2,6 +2,7 @@
 
 namespace PHPDocsMD\Reflections;
 
+use Exception;
 use PHPDocsMD\DocInfo;
 use PHPDocsMD\DocInfoExtractor;
 use PHPDocsMD\Entities\ClassEntity;
@@ -11,7 +12,11 @@ use PHPDocsMD\Entities\ParamEntity;
 use PHPDocsMD\FunctionFinder;
 use PHPDocsMD\UseInspector;
 use PHPDocsMD\Utils;
+use ReflectionClass;
 use ReflectionMethod;
+use ReflectionParameter;
+use RuntimeException;
+
 use function count;
 
 /**
@@ -48,14 +53,17 @@ class Reflector implements ReflectorInterface
     }
 
     /**
-     * @param ClassEntityFactory|DocInfoExtractor|FunctionFinder|UseInspector|null $obj
-     * @param string $className
-     * @param null|object $in
+     * @param null|ClassEntityFactory|DocInfoExtractor|FunctionFinder|UseInspector $obj
+     * @param string                                                               $className
+     * @param null|object                                                          $in
      *
      * @return object
      */
-    private function loadIfNull($obj, string $className, ?object $in = null): object
-    {
+    private function loadIfNull(
+        FunctionFinder|ClassEntityFactory|DocInfoExtractor|UseInspector|null $obj,
+        string $className,
+        ?object $in = null
+    ): object {
         return is_object($obj) ? $obj : new $className($in);
     }
 
@@ -63,9 +71,9 @@ class Reflector implements ReflectorInterface
      * @return \PHPDocsMD\Entities\ClassEntity
      * @throws \ReflectionException
      */
-    public function getClassEntity(): \PHPDocsMD\Entities\ClassEntity
+    public function getClassEntity(): ClassEntity
     {
-        $classReflection = new \ReflectionClass($this->className);
+        $classReflection = new ReflectionClass($this->className);
         $classEntity = $this->classEntityFactory->create($classReflection);
 
         $classEntity->setFunctions($this->getClassFunctions($classEntity, $classReflection));
@@ -73,9 +81,12 @@ class Reflector implements ReflectorInterface
         return $classEntity;
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     private function getClassFunctions(
         ClassEntity $classEntity,
-        \ReflectionClass $reflectionClass
+        ReflectionClass $reflectionClass
     ): array {
         $classUseStatements = $this->useInspector->getUseStatements($reflectionClass);
         $publicFunctions = [];
@@ -137,13 +148,18 @@ class Reflector implements ReflectorInterface
     }
 
     /**
+     * @param \ReflectionMethod               $method
+     * @param \PHPDocsMD\Entities\ClassEntity $class
+     * @param array                           $useStatements
+     *
      * @return bool|FunctionEntity
+     * @throws \ReflectionException
      */
     protected function createFunctionEntity(
         ReflectionMethod $method,
         ClassEntity $class,
         array $useStatements
-    ) {
+    ): bool|FunctionEntity {
         $func = new FunctionEntity();
         $docInfo = $this->docInfoExtractor->extractInfo($method);
         $this->docInfoExtractor->applyInfoToEntity($method, $docInfo, $func);
@@ -170,6 +186,9 @@ class Reflector implements ReflectorInterface
         return $func;
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     private function findInheritedFunctionDeclaration(
         FunctionEntity $func,
         ClassEntity $class
@@ -186,7 +205,7 @@ class Reflector implements ReflectorInterface
                 $class->getInterfaces()
             );
             if (!($inheritedFuncDeclaration instanceof FunctionEntity)) {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     'Function ' . $funcName . ' tries to inherit docs but no parent method is found'
                 );
             }
@@ -205,8 +224,8 @@ class Reflector implements ReflectorInterface
         ClassEntity $class
     ): bool {
         return $info->shouldBeIgnored() ||
-            $method->isPrivate() ||
-            !$class->isSame($method->getDeclaringClass()->getName());
+               $method->isPrivate() ||
+               !$class->isSame($method->getDeclaringClass()->getName());
     }
 
     private function getReturnType(
@@ -226,7 +245,7 @@ class Reflector implements ReflectorInterface
             $name = $method->getReturnType();
             $name = ($name === null) ? $returnType : $name->getName();
 
-            if ($name !== 'self' && \PHPDocsMD\Utils::isNativeType($name)) {
+            if ($name !== 'self' && Utils::isNativeType($name)) {
                 $returnType = $name;
             } else {
                 $returnType = $name === 'self' ? '\\' . $method->class : '\\' . $name;
@@ -236,7 +255,7 @@ class Reflector implements ReflectorInterface
         if (empty($returnType)) {
             $returnType = $this->guessReturnTypeFromFuncName($func->getName(), $method);
         } elseif (Utils::isClassReference($returnType) && !$this->classExists($returnType)) {
-            $isReferenceToArrayOfObjects = substr($returnType, -2) === '[]' ? '[]' : '';
+            $isReferenceToArrayOfObjects = str_ends_with($returnType, '[]') ? '[]' : '';
             if ($isReferenceToArrayOfObjects) {
                 $returnType = substr($returnType, 0, -2);
             }
@@ -269,12 +288,12 @@ class Reflector implements ReflectorInterface
         $mixed = ['get', 'load', 'fetch', 'find', 'create'];
         $bool = ['is', 'can', 'has', 'have', 'should'];
         foreach ($mixed as $prefix) {
-            if (strpos($name, $prefix) === 0) {
+            if (str_starts_with($name, $prefix)) {
                 return 'mixed';
             }
         }
         foreach ($bool as $prefix) {
-            if (strpos($name, $prefix) === 0) {
+            if (str_starts_with($name, $prefix)) {
                 return 'bool';
             }
         }
@@ -308,12 +327,12 @@ class Reflector implements ReflectorInterface
 
     /**
      * @param \ReflectionParameter $reflection
-     * @param array $docs
+     * @param array                $docs
      *
      * @return \PHPDocsMD\Entities\ParamEntity
      * @todo Turn this into a class "FunctionEntityFactory"
      */
-    private function createParameterEntity(\ReflectionParameter $reflection, array $docs): ParamEntity
+    private function createParameterEntity(ReflectionParameter $reflection, array $docs): ParamEntity
     {
         // need to use slash instead of pipe or md-generation will get it wrong
         $def = false;
@@ -324,8 +343,9 @@ class Reflector implements ReflectorInterface
         }
 
         if ($declaredType && $declaredType !== $docs['type'] &&
-            !($declaredType === 'array' && substr($docs['type'], -2) === '[]')) {
-            if ($declaredType && $docs['type']) {
+            !($declaredType === 'array' && str_ends_with($docs['type'], '[]'))
+        ) {
+            if ($docs['type']) {
                 $posClassA = Utils::getClassBaseName($docs['type']);
                 $posClassB = Utils::getClassBaseName($declaredType);
                 if ($posClassA === $posClassB) {
@@ -354,7 +374,7 @@ class Reflector implements ReflectorInterface
             } elseif (is_array($def)) {
                 $def = '[]';
             }
-        } catch (\Exception $e) {
+        } catch (Exception) {
             // Pass.
         }
 
@@ -362,16 +382,18 @@ class Reflector implements ReflectorInterface
 
         if (!empty($docs)) {
             $docs['default'] = $def;
-            if ($type === 'mixed' && $def === 'null' && strpos($docs['type'], '\\') === 0) {
+            if ($type === 'mixed' && $def === 'null' && str_starts_with($docs['type'], '\\')) {
                 $type = false;
             }
 
             if ($type && $def &&
                 !empty($docs['type']) &&
                 $docs['type'] !== $type &&
-                strpos($docs['type'], '|') === false) {
-                if (substr($docs['type'], strpos($docs['type'], '\\')) ===
-                    substr($declaredType, strpos($declaredType, '\\'))) {
+                !str_contains($docs['type'], '|')
+            ) {
+                if (substr($docs['type'], (int)strpos($docs['type'], '\\')) ===
+                    substr($declaredType, (int)strpos($declaredType, '\\'))
+                ) {
                     $docs['type'] = $declaredType;
                 } else {
                     $docs['type'] = ($type === 'mixed' ? '' : $type . '/') . $docs['type'];
@@ -392,9 +414,11 @@ class Reflector implements ReflectorInterface
         $param->setDescription($docs['description'] ?? '');
         $param->setName($varName);
         $param->setDefault($docs['default']);
-        $param->setType(empty($docs['type'])
-            ? 'mixed'
-            : str_replace(['|', '\\\\'], ['/', '\\'], $docs['type']));
+        $param->setType(
+            empty($docs['type'])
+                ? 'mixed'
+                : str_replace(['|', '\\\\'], ['/', '\\'], $docs['type'])
+        );
 
         return $param;
     }
@@ -421,7 +445,7 @@ class Reflector implements ReflectorInterface
      * </code>
      * ```
      */
-    public static function getParamType(\ReflectionParameter $refParam): string
+    public static function getParamType(ReflectionParameter $refParam): string
     {
         $export = str_replace(' or NULL', '', (string)$refParam);
 
@@ -430,11 +454,11 @@ class Reflector implements ReflectorInterface
             '\\1',
             $export
         );
-        if (strpos($type, 'Parameter ') !== false) {
+        if (str_contains($type, 'Parameter ')) {
             return '';
         }
 
-        if ($type !== 'array' && strpos($type, '\\') !== 0) {
+        if ($type !== 'array' && !str_starts_with($type, '\\')) {
             $type = '\\' . $type;
         }
 
@@ -443,9 +467,10 @@ class Reflector implements ReflectorInterface
 
     /**
      * @param string|bool|array|mixed $def
+     *
      * @return string
      */
-    private function getTypeFromVal($def): string
+    private function getTypeFromVal(mixed $def): string
     {
         if (is_string($def)) {
             return 'string';

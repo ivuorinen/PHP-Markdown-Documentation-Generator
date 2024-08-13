@@ -28,21 +28,21 @@ class ClassEntity extends CodeEntity
     {
         return $toggle === null
             ? $this->hasIgnoreTag
-            : ($this->hasIgnoreTag = (bool)$toggle);
+            : ($this->hasIgnoreTag = $toggle);
     }
 
     public function hasInternalTag(bool $toggle = null): bool
     {
         return $toggle === null
             ? $this->hasInternalTag
-            : ($this->hasInternalTag = (bool)$toggle);
+            : ($this->hasInternalTag = $toggle);
     }
 
     public function isNative(bool $toggle = null): bool
     {
         return $toggle === null
             ? $this->isNative
-            : ($this->isNative = (bool)$toggle);
+            : ($this->isNative = $toggle);
     }
 
     public function getExtends(): string
@@ -112,11 +112,11 @@ class ClassEntity extends CodeEntity
     /**
      * Check whether this object is referring to given class name or object instance
      *
-     * @param string|object $class
+     * @param object|string $class
      *
      * @return bool
      */
-    public function isSame($class): bool
+    public function isSame(object|string $class): bool
     {
         $className = is_object($class) ? get_class($class) : $class;
 
@@ -158,7 +158,7 @@ class ClassEntity extends CodeEntity
             '%extra%' => '',
         ];
 
-        if (strpos($format, '%label%') === false) {
+        if (!str_contains($format, '%label%')) {
             if ($this->isInterface()) {
                 $translate['%extra%'] = '(interface)';
             } elseif ($this->isAbstract()) {
@@ -175,13 +175,13 @@ class ClassEntity extends CodeEntity
     {
         return $toggle === null
             ? $this->isInterface
-            : ($this->isInterface = (bool)$toggle);
+            : ($this->isInterface = $toggle);
     }
 
     public function isAbstract(bool $toggle = null): bool
     {
         return $toggle === null
             ? $this->abstract
-            : ($this->abstract = (bool)$toggle);
+            : ($this->abstract = $toggle);
     }
 }

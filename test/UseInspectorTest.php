@@ -4,7 +4,7 @@ use PHPUnit\Framework\TestCase;
 
 class UseInspectorTest extends TestCase
 {
-    public function testInspection()
+    public function testInspection(): void
     {
         $code = '
         Abra

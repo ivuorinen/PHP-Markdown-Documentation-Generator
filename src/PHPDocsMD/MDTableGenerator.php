@@ -38,7 +38,7 @@ class MDTableGenerator implements TableGenerator
      */
     public function appendExamplesToEndOfTable(bool $toggle): void
     {
-        $this->appendExamples = (bool)$toggle;
+        $this->appendExamples = $toggle;
     }
 
     /**
@@ -66,7 +66,7 @@ class MDTableGenerator implements TableGenerator
      */
     public function doDeclareAbstraction(bool $toggle): void
     {
-        $this->declareAbstraction = (bool)$toggle;
+        $this->declareAbstraction = $toggle;
     }
 
     /**
@@ -108,7 +108,7 @@ class MDTableGenerator implements TableGenerator
         } elseif ($func->getDescription()) {
             $str .= '<br /><em>' . $func->getDescription() . '</em>';
         }
-        if ($func->getSee() && $includeSee) {
+        if ($includeSee && $func->getSee()) {
             $str .= '<br /><em>&nbsp;&nbsp;&nbsp;&nbsp;See: ' .
                 implode(', ', $func->getSee()) . '</em>';
         }
@@ -164,19 +164,19 @@ class MDTableGenerator implements TableGenerator
         // Remove possible code tag
         $example = self::stripCodeTags($example);
 
-        if (preg_match('/(\n       )/', $example)) {
-            $example = preg_replace('/(\n       )/', "\n", $example);
-        } elseif (preg_match('/(\n    )/', $example)) {
-            $example = preg_replace('/(\n    )/', "\n", $example);
+        if (preg_match('/(\n {7})/', $example)) {
+            $example = preg_replace('/(\n {7})/', "\n", $example);
+        } elseif (preg_match('/(\n {4})/', $example)) {
+            $example = preg_replace('/(\n {4})/', "\n", $example);
         } else {
-            $example = preg_replace('/(\n   )/', "\n", $example);
+            $example = preg_replace('/(\n {3})/', "\n", $example);
         }
         $type = '';
 
         // A very naive analysis of the programming language used in the comment
-        if (strpos($example, '<?php') !== false) {
+        if (str_contains($example, '<?php')) {
             $type = 'php';
-        } elseif (strpos($example, 'var ') !== false && strpos($example, '</') === false) {
+        } elseif (str_contains($example, 'var ') && !str_contains($example, '</')) {
             $type = 'js';
         }
 
@@ -186,11 +186,11 @@ class MDTableGenerator implements TableGenerator
     /**
      * @param string $example
      *
-     * @return mixed
+     * @return string
      */
-    private static function stripCodeTags(string $example)
+    private static function stripCodeTags(string $example): string
     {
-        if (strpos($example, '<code') !== false) {
+        if (str_contains($example, '<code')) {
             $parts = array_slice(explode('</code>', $example), -2);
             $example = (string)current($parts);
             $parts = array_slice(explode('<code>', $example), 1);

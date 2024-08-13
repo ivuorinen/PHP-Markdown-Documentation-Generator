@@ -33,7 +33,7 @@ class FunctionEntity extends CodeEntity
      * @param bool $isStatic
      * @return FunctionEntity
      */
-    public function setIsStatic(bool $isStatic): \PHPDocsMD\Entities\FunctionEntity
+    public function setIsStatic(bool $isStatic): FunctionEntity
     {
         $this->isStatic = $isStatic;
         return $this;
@@ -50,7 +50,7 @@ class FunctionEntity extends CodeEntity
      * @param bool $abstract
      * @return \PHPDocsMD\Entities\FunctionEntity
      */
-    public function setAbstract(bool $abstract): \PHPDocsMD\Entities\FunctionEntity
+    public function setAbstract(bool $abstract): FunctionEntity
     {
         $this->abstract = $abstract;
         return $this;
@@ -82,7 +82,7 @@ class FunctionEntity extends CodeEntity
     /**
      * @param \PHPDocsMD\Entities\ParamEntity[] $params
      */
-    public function setParams(array $params): \PHPDocsMD\Entities\FunctionEntity
+    public function setParams(array $params): FunctionEntity
     {
         $this->params = $params;
 
@@ -94,7 +94,7 @@ class FunctionEntity extends CodeEntity
         return $this->returnType;
     }
 
-    public function setReturnType(string $returnType): \PHPDocsMD\Entities\FunctionEntity
+    public function setReturnType(string $returnType): FunctionEntity
     {
         $this->returnType = $returnType;
 
@@ -106,7 +106,7 @@ class FunctionEntity extends CodeEntity
         return $this->visibility;
     }
 
-    public function setVisibility(string $visibility): \PHPDocsMD\Entities\FunctionEntity
+    public function setVisibility(string $visibility): FunctionEntity
     {
         $this->visibility = $visibility;
 
@@ -118,7 +118,7 @@ class FunctionEntity extends CodeEntity
         return $this->class;
     }
 
-    public function setClass(string $class): \PHPDocsMD\Entities\FunctionEntity
+    public function setClass(string $class): FunctionEntity
     {
         $this->class = $class;
 
@@ -130,7 +130,7 @@ class FunctionEntity extends CodeEntity
         return $this->see;
     }
 
-    public function setSee(array $see): \PHPDocsMD\Entities\FunctionEntity
+    public function setSee(array $see): FunctionEntity
     {
         $this->see = $see;
 

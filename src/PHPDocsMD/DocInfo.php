@@ -37,7 +37,7 @@ class DocInfo
 
     public function getParameterInfo(string $name): array
     {
-        return $this->data['params'][ $name ] ?? [];
+        return $this->data['params'][$name] ?? [];
     }
 
     public function getExample(): string

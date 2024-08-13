@@ -1,15 +1,18 @@
 <?php
 
+use PHPDocsMD\Entities\FunctionEntity;
+use PHPDocsMD\Entities\ParamEntity;
+use PHPDocsMD\MDTableGenerator;
 use PHPUnit\Framework\TestCase;
 
 class MDTableGeneratorTest extends TestCase
 {
     public function testDeprecatedFunc(): void
     {
-        $tbl = new \PHPDocsMD\MDTableGenerator();
+        $tbl = new MDTableGenerator();
         $tbl->openTable();
 
-        $deprecated = new \PHPDocsMD\Entities\FunctionEntity();
+        $deprecated = new FunctionEntity();
         $deprecated->isDeprecated(true);
         $deprecated->setDeprecationMessage('Is deprecated');
         $deprecated->setName('myFunc');
@@ -31,10 +34,10 @@ class MDTableGeneratorTest extends TestCase
 
     public function testFunc(): void
     {
-        $tbl = new \PHPDocsMD\MDTableGenerator();
+        $tbl = new MDTableGenerator();
         $tbl->openTable();
 
-        $func = new \PHPDocsMD\Entities\FunctionEntity();
+        $func = new FunctionEntity();
         $func->setName('myFunc');
         $tbl->addFunc($func);
 
@@ -48,10 +51,10 @@ class MDTableGeneratorTest extends TestCase
 
     public function testFuncWithAllFeatures(): void
     {
-        $tbl = new \PHPDocsMD\MDTableGenerator();
+        $tbl = new MDTableGenerator();
         $tbl->openTable();
 
-        $func = new \PHPDocsMD\Entities\FunctionEntity();
+        $func = new FunctionEntity();
 
         $this->assertFalse($func->isStatic());
         $this->assertFalse($func->hasParams());
@@ -67,13 +70,13 @@ class MDTableGeneratorTest extends TestCase
 
         $params = [];
 
-        $paramA = new \PHPDocsMD\Entities\ParamEntity();
+        $paramA = new ParamEntity();
         $paramA->setName('$var');
         $paramA->setType('mixed');
         $paramA->setDefault('null');
         $params[] = $paramA;
 
-        $paramB = new \PHPDocsMD\Entities\ParamEntity();
+        $paramB = new ParamEntity();
         $paramB->setName('$other');
         $paramB->setType('string');
         $paramB->setDefault("'test'");
@@ -90,17 +93,19 @@ class MDTableGeneratorTest extends TestCase
         $tblMarkdown = $tbl->getTable();
         $expect = '| Visibility | Function |' . PHP_EOL .
             '|:-----------|:---------|' . PHP_EOL .
-            '| protected static | <strong>someFunc(</strong><em>mixed</em> <strong>$var=null</strong>, <em>string</em> <strong>$other=\'test\'</strong>)</strong> : <em>\\stdClass</em><br /><em>desc...</em> |';
+            '| protected static | <strong>someFunc(</strong><em>mixed</em> <strong>$var=null</strong>, '
+                  . '<em>string</em> <strong>$other=\'test\'</strong>)</strong> : <em>\\stdClass</em><br />'
+                  . '<em>desc...</em> |';
 
         $this->assertEquals($expect, $tblMarkdown);
     }
 
     public function testToggleDeclaringAbstraction(): void
     {
-        $tbl = new \PHPDocsMD\MDTableGenerator();
+        $tbl = new MDTableGenerator();
         $tbl->openTable();
 
-        $func = new \PHPDocsMD\Entities\FunctionEntity();
+        $func = new FunctionEntity();
         $func->isAbstract(true);
         $func->setName('someFunc');
 

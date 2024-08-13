@@ -2,6 +2,8 @@
 
 namespace PHPDocsMD;
 
+use ReflectionClass;
+
 /**
  * Class that can extract all use statements in a file
  *
@@ -9,7 +11,7 @@ namespace PHPDocsMD;
  */
 class UseInspector
 {
-    public function getUseStatements(\ReflectionClass $reflectionClass): array
+    public function getUseStatements(ReflectionClass $reflectionClass): array
     {
         $classUseStatements = [];
         $classFile = $reflectionClass->getFileName();

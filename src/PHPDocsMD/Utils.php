@@ -2,6 +2,12 @@
 
 namespace PHPDocsMD;
 
+use ReflectionClass;
+
+use function array_unique;
+use function in_array;
+use function strtolower;
+
 /**
  * Utilities.
  *
@@ -29,9 +35,10 @@ class Utils
 
     public static function isNativeType(string $type = ''): bool
     {
-        $type = \strtolower(trim($type));
+        $type = strtolower(trim($type));
         $type = trim($type, '\\');
-        return \in_array($type, self::$nativeTypes, true);
+
+        return in_array($type, self::$nativeTypes, true);
     }
 
     public static function getClassBaseName(string $fullClassName): string
@@ -56,22 +63,22 @@ class Utils
             $parts[$p] = $p;
         }
 
-        $parts = \array_unique($parts, SORT_NATURAL);
+        $parts = array_unique($parts, SORT_NATURAL);
 
         return implode(' | ', $parts);
     }
 
     private static function shouldPrefixWithNameSpace(string $typeDeclaration): bool
     {
-        return strpos($typeDeclaration, '\\') !== 0 && self::isClassReference($typeDeclaration);
+        return !str_starts_with($typeDeclaration, '\\') && self::isClassReference($typeDeclaration);
     }
 
     public static function isClassReference(string $typeDeclaration): bool
     {
-        $sanitizedTypeDeclaration = rtrim(trim(strtolower($typeDeclaration)), '[]');
+        $sanitizedTypeDeclaration = strtolower(rtrim(trim($typeDeclaration), '[]'));
 
         return !in_array($sanitizedTypeDeclaration, self::$nativeTypes, true) &&
-            strpos($typeDeclaration, ' ') === false;
+               !str_contains($typeDeclaration, ' ');
     }
 
     public static function sanitizeClassName(string $name): string
@@ -79,11 +86,14 @@ class Utils
         return '\\' . trim($name, ' \\');
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public static function isNativeClassReference(string $typeDeclaration): bool
     {
         $sanitizedType = str_replace('[]', '', $typeDeclaration);
         if (class_exists($sanitizedType, false) && self::isClassReference($typeDeclaration)) {
-            $reflectionClass = new \ReflectionClass($sanitizedType);
+            $reflectionClass = new ReflectionClass($sanitizedType);
 
             return !$reflectionClass->getFileName();
         }
