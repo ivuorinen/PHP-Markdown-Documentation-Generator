@@ -111,10 +111,6 @@ class ClassEntity extends CodeEntity
 
     /**
      * Check whether this object is referring to given class name or object instance
-     *
-     * @param object|string $class
-     *
-     * @return bool
      */
     public function isSame(object|string $class): bool
     {
@@ -125,8 +121,6 @@ class ClassEntity extends CodeEntity
 
     /**
      * Generates an anchor link out of the generated title (see generateTitle)
-     *
-     * @return string
      */
     public function generateAnchor(): string
     {
@@ -143,10 +137,6 @@ class ClassEntity extends CodeEntity
 
     /**
      * Generate a title describing the class this object is referring to
-     *
-     * @param string $format
-     *
-     * @return string
      */
     public function generateTitle(string $format = '%label%: %name% %extra%'): string
     {

@@ -105,11 +105,6 @@ class DocInfoExtractor
         return $tags;
     }
 
-    /**
-     * @param \ReflectionMethod|\ReflectionClass $reflection
-     *
-     * @return string
-     */
     private function getNameSpace(ReflectionMethod|ReflectionClass $reflection): string
     {
         return $reflection instanceof ReflectionClass
@@ -182,11 +177,6 @@ class DocInfoExtractor
         return $see;
     }
 
-    /**
-     * @param \ReflectionMethod|\ReflectionClass $reflection
-     * @param DocInfo                            $docInfo
-     * @param CodeEntity                         $code
-     */
     public function applyInfoToEntity(
         ReflectionMethod|ReflectionClass $reflection,
         DocInfo $docInfo,

@@ -53,13 +53,6 @@ class Reflector implements ReflectorInterface
         );
     }
 
-    /**
-     * @param null|ClassEntityFactory|DocInfoExtractor|FunctionFinder|UseInspector $obj
-     * @param string                                                               $className
-     * @param null|object                                                          $in
-     *
-     * @return object
-     */
     private function loadIfNull(
         FunctionFinder|ClassEntityFactory|DocInfoExtractor|UseInspector|null $obj,
         string $className,
@@ -69,7 +62,6 @@ class Reflector implements ReflectorInterface
     }
 
     /**
-     * @return \PHPDocsMD\Entities\ClassEntity
      * @throws \ReflectionException
      */
     public function getClassEntity(): ClassEntity
@@ -149,11 +141,6 @@ class Reflector implements ReflectorInterface
     }
 
     /**
-     * @param \ReflectionMethod               $method
-     * @param \PHPDocsMD\Entities\ClassEntity $class
-     * @param array                           $useStatements
-     *
-     * @return bool|FunctionEntity
      * @throws \ReflectionException
      */
     protected function createFunctionEntity(
@@ -188,12 +175,13 @@ class Reflector implements ReflectorInterface
     }
 
     /**
+     * @return \PHPDocsMD\Entities\FunctionEntity|true
      * @throws \ReflectionException
      */
     private function findInheritedFunctionDeclaration(
         FunctionEntity $func,
         ClassEntity $class
-    ): FunctionEntity {
+    ): FunctionEntity|bool {
         $funcName = $func->getName();
         $inheritedFuncDeclaration = $this->functionFinder->find(
             $funcName,
@@ -207,7 +195,7 @@ class Reflector implements ReflectorInterface
             );
             if (!($inheritedFuncDeclaration instanceof FunctionEntity)) {
                 throw new RuntimeException(
-                    'Function ' . $funcName . ' tries to inherit docs but no parent method is found'
+                    sprintf("Function %s tries to inherit docs but no parent method is found", $funcName)
                 );
             }
         }
@@ -307,10 +295,6 @@ class Reflector implements ReflectorInterface
     }
 
     /**
-     * @param \ReflectionParameter $reflection
-     * @param array                $docs
-     *
-     * @return \PHPDocsMD\Entities\ParamEntity
      * @todo Turn this into a class "FunctionEntityFactory"
      */
     private function createParameterEntity(ReflectionParameter $reflection, array $docs): ParamEntity
@@ -361,7 +345,14 @@ class Reflector implements ReflectorInterface
 
         $varName = '$' . $reflection->getName();
 
-        if (!empty($docs)) {
+        if (empty($docs)) {
+            $docs = [
+                'description' => '',
+                'name' => $varName,
+                'default' => $def,
+                'type' => $type,
+            ];
+        } else {
             $docs['default'] = $def;
             if ($type === 'mixed' && $def === 'null' && str_starts_with($docs['type'], '\\')) {
                 $type = false;
@@ -382,13 +373,6 @@ class Reflector implements ReflectorInterface
             } elseif ($type && empty($docs['type'])) {
                 $docs['type'] = $type;
             }
-        } else {
-            $docs = [
-                'description' => '',
-                'name' => $varName,
-                'default' => $def,
-                'type' => $type,
-            ];
         }
 
         $param = new ParamEntity();
@@ -408,9 +392,6 @@ class Reflector implements ReflectorInterface
      * Tries to find out if the type of the given parameter. Will
      * return empty string if not possible.
      *
-     * @param \ReflectionParameter $refParam
-     *
-     * @return string
      * @example
      * ```php
      * <code>
@@ -448,8 +429,6 @@ class Reflector implements ReflectorInterface
 
     /**
      * @param string|bool|array|mixed $def
-     *
-     * @return string
      */
     private function getTypeFromVal(mixed $def): string
     {
@@ -482,12 +461,6 @@ class Reflector implements ReflectorInterface
         return $this;
     }
 
-    /**
-     * @param \ReflectionMethod $method
-     * @param string            $returnType
-     *
-     * @return string
-     */
     public function getReturnTypeFromMethod(ReflectionMethod $method, string $returnType): string
     {
         $name = $method->getReturnType();
@@ -511,12 +484,6 @@ class Reflector implements ReflectorInterface
         return $returnType;
     }
 
-    /**
-     * @param string $returnType
-     * @param array  $useStatements
-     *
-     * @return string
-     */
     public function getReturnTypesArray(string $returnType, array $useStatements): string
     {
         $isReferenceToArrayOfObjects = str_ends_with($returnType, '[]') ? '[]' : '';

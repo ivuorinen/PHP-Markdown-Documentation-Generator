@@ -28,8 +28,6 @@ class UseInspector
     }
 
     /**
-     * @param string $content
-     *
      * @return string[]
      */
     public function getUseStatementsInString(string $content): array

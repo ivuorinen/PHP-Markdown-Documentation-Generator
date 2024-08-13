@@ -104,11 +104,7 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
-     * @return int
-     * @throws \InvalidArgumentException
+     * @throws \InvalidArgumentException|\ReflectionException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {

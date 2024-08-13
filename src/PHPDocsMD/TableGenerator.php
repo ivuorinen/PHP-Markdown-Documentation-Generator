@@ -13,11 +13,7 @@ use PHPDocsMD\Entities\FunctionEntity;
 interface TableGenerator
 {
     /**
-     * Create a markdown-formatted code view out of an example comment
-     *
-     * @param string $example
-     *
-     * @return string
+     * Create a markdown-formatted code view out of an example comment.
      */
     public static function formatExampleComment(string $example): string;
 
@@ -25,8 +21,6 @@ interface TableGenerator
      * All example comments found while generating the table will be
      * appended to the end of the table. Set $toggle to false to
      * prevent this behaviour
-     *
-     * @param bool $toggle
      */
     public function appendExamplesToEndOfTable(bool $toggle): void;
 
@@ -38,18 +32,12 @@ interface TableGenerator
     /**
      * Toggle whether methods being abstract (or part of an interface)
      * should be declared as abstract in the table
-     *
-     * @param bool $toggle
      */
     public function doDeclareAbstraction(bool $toggle): void;
 
     /**
      * Generates a markdown formatted table row with information about given function. Then adds the
      * row to the table and returns the markdown formatted string.
-     *
-     * @param FunctionEntity $func
-     *
-     * @return string
      */
     public function addFunc(FunctionEntity $func): string;
 

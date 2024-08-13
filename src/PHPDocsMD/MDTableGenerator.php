@@ -31,10 +31,8 @@ class MDTableGenerator implements TableGenerator
 
     /**
      * All example comments found while generating the table will be
-     * appended to the end of the table. Set $toggle to false to
-     * prevent this behaviour
-     *
-     * @param bool $toggle
+     * appended to the end of the table. Setting $toggle to false
+     * prevents this behaviour.
      */
     public function appendExamplesToEndOfTable(bool $toggle): void
     {
@@ -43,8 +41,6 @@ class MDTableGenerator implements TableGenerator
 
     /**
      * Begin generating a new markdown-formatted table
-     *
-     * @return void
      */
     public function openTable(): void
     {
@@ -131,9 +127,6 @@ class MDTableGenerator implements TableGenerator
         return $markDown;
     }
 
-    /**
-     * @return string
-     */
     public function getTable(): string
     {
         $tbl = trim($this->markdown);
@@ -154,10 +147,6 @@ class MDTableGenerator implements TableGenerator
 
     /**
      * Create a markdown-formatted code view out of an example comment
-     *
-     * @param string $example
-     *
-     * @return string
      */
     public static function formatExampleComment(string $example): string
     {
@@ -183,11 +172,6 @@ class MDTableGenerator implements TableGenerator
         return sprintf("```%s\n%s\n```", $type, trim($example));
     }
 
-    /**
-     * @param string $example
-     *
-     * @return string
-     */
     private static function stripCodeTags(string $example): string
     {
         if (str_contains($example, '<code')) {

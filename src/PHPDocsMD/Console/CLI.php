@@ -31,7 +31,6 @@ class CLI extends Application
      * @param \Symfony\Component\Console\Input\InputInterface|null $input
      * @param \Symfony\Component\Console\Output\OutputInterface|null $output
      *
-     * @return int
      * @throws \Exception
      */
     public function run(InputInterface $input = null, OutputInterface $output = null): int

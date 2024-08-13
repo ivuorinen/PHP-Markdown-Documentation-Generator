@@ -38,6 +38,9 @@ class ParamEntity extends CodeEntity
         return $this;
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function getNativeClassType(): ?string
     {
         foreach (explode('/', $this->type) as $typeDeclaration) {
