@@ -28,7 +28,7 @@
 | public | <strong>addFunc(</strong><em>[\PHPDocsMD\Entities\FunctionEntity](#class-phpdocsmdentitiesfunctionentity) </em> <strong>$func</strong>)</strong> : <em>string</em><br /><em>Generates a markdown formatted table row with information about given function. Then adds the row to the table and returns the markdown formatted string.</em> |
 | public | <strong>appendExamplesToEndOfTable(</strong><em>\bool</em> <strong>$toggle</strong>)</strong> : <em>void</em><br /><em>All example comments found while generating the table will be appended to the end of the table. Set $toggle to false to prevent this behaviour</em> |
 | public | <strong>doDeclareAbstraction(</strong><em>\bool</em> <strong>$toggle</strong>)</strong> : <em>void</em><br /><em>Toggle whether methods being abstract (or part of an interface) should be declared as abstract in the table</em> |
-| public static | <strong>formatExampleComment(</strong><em>\string</em> <strong>$example</strong>)</strong> : <em>string</em><br /><em>Create a markdown-formatted code view out of an example comment</em> |
+| public static | <strong>formatExampleComment(</strong><em>\string</em> <strong>$example</strong>)</strong> : <em>string</em><br /><em>Create a markdown-formatted code view out of an example comment.</em> |
 | public | <strong>getTable()</strong> : <em>string</em> |
 | public | <strong>openTable()</strong> : <em>void</em><br /><em>Begin generating a new markdown-formatted table</em> |
 
@@ -53,14 +53,14 @@
 | Visibility | Function |
 |:-----------|:---------|
 | public | <strong>addFunc(</strong><em>[\PHPDocsMD\Entities\FunctionEntity](#class-phpdocsmdentitiesfunctionentity) </em> <strong>$func</strong>, <em>\bool</em> <strong>$includeSee=false</strong>)</strong> : <em>string</em><br /><em>Generates a markdown formatted table row with information about given function. Then adds the row to the table and returns the markdown formatted string.</em> |
-| public | <strong>appendExamplesToEndOfTable(</strong><em>\bool</em> <strong>$toggle</strong>)</strong> : <em>void</em><br /><em>All example comments found while generating the table will be appended to the end of the table. Set $toggle to false to prevent this behaviour</em> |
+| public | <strong>appendExamplesToEndOfTable(</strong><em>\bool</em> <strong>$toggle</strong>)</strong> : <em>void</em><br /><em>All example comments found while generating the table will be appended to the end of the table. Setting $toggle to false prevents this behaviour.</em> |
 | public | <strong>doDeclareAbstraction(</strong><em>\bool</em> <strong>$toggle</strong>)</strong> : <em>void</em><br /><em>Toggle whether methods being abstract (or part of an interface) should be declared as abstract in the table</em> |
 | public static | <strong>formatExampleComment(</strong><em>\string</em> <strong>$example</strong>)</strong> : <em>string</em><br /><em>Create a markdown-formatted code view out of an example comment</em> |
 | public | <strong>getTable()</strong> : <em>string</em> |
 | public | <strong>openTable()</strong> : <em>void</em><br /><em>Begin generating a new markdown-formatted table</em> |
 
 
-*This class implements [\PHPDocsMD\TableGenerator](#interface-phpdocsmdtablegenerator) *
+*This class implements [\PHPDocsMD\TableGenerator](#interface-phpdocsmdtablegenerator)*
 
 <hr /><a id="class-phpdocsmddocinfoextractor"></a>
 
@@ -70,8 +70,8 @@
 
 | Visibility | Function |
 |:-----------|:---------|
-| public | <strong>applyInfoToEntity(</strong><em>[\ReflectionClass](https://php.net/manual/en/class.reflectionclass.php)  / \ReflectionMethod</em> <strong>$reflection</strong>, <em>[\PHPDocsMD\DocInfo](#class-phpdocsmddocinfo) </em> <strong>$docInfo</strong>, <em>[\PHPDocsMD\Entities\CodeEntity](#class-phpdocsmdentitiescodeentity) </em> <strong>$code</strong>)</strong> : <em>void</em> |
-| public | <strong>extractInfo(</strong><em>[\ReflectionClass](https://php.net/manual/en/class.reflectionclass.php)  / \ReflectionMethod</em> <strong>$reflection</strong>)</strong> : <em>[\PHPDocsMD\DocInfo](#class-phpdocsmddocinfo) </em> |
+| public | <strong>applyInfoToEntity(</strong><em>[\ReflectionClass](https://php.net/manual/en/class.reflectionclass.php) </em> <strong>$reflection</strong>, <em>[\PHPDocsMD\DocInfo](#class-phpdocsmddocinfo) </em> <strong>$docInfo</strong>, <em>[\PHPDocsMD\Entities\CodeEntity](#class-phpdocsmdentitiescodeentity) </em> <strong>$code</strong>)</strong> : <em>void</em> |
+| public | <strong>extractInfo(</strong><em>[\ReflectionClass](https://php.net/manual/en/class.reflectionclass.php) </em> <strong>$reflection</strong>)</strong> : <em>[\PHPDocsMD\DocInfo](#class-phpdocsmddocinfo) </em> |
 
 
 <hr /><a id="class-phpdocsmdfunctionfinder"></a>
@@ -82,8 +82,8 @@
 
 | Visibility | Function |
 |:-----------|:---------|
-| public | <strong>find(</strong><em>\string</em> <strong>$methodName</strong>, <em>\string</em> <strong>$className</strong>)</strong> : <em>false | \PHPDocsMD\Entities\FunctionEntity</em> |
-| public | <strong>findInClasses(</strong><em>\string</em> <strong>$methodName</strong>, <em>array</em> <strong>$classes</strong>)</strong> : <em>bool | \PHPDocsMD\Entities\FunctionEntity</em> |
+| public | <strong>find(</strong><em>\string</em> <strong>$methodName</strong>, <em>\string</em> <strong>$className</strong>)</strong> : <em>[\PHPDocsMD\Entities\FunctionEntity](#class-phpdocsmdentitiesfunctionentity)  | bool</em> |
+| public | <strong>findInClasses(</strong><em>\string</em> <strong>$methodName</strong>, <em>array</em> <strong>$classes</strong>)</strong> : <em>[\PHPDocsMD\Entities\FunctionEntity](#class-phpdocsmdentitiesfunctionentity)  | bool</em> |
 
 
 <hr /><a id="class-phpdocsmduseinspector"></a>
@@ -145,7 +145,7 @@
 | Visibility | Function |
 |:-----------|:---------|
 | public | <strong>__construct()</strong> : <em>void</em> |
-| public | <strong>run(</strong><em>\Symfony\Component\Console\Input\InputInterface / null/\Symfony\Component\Console\Input\InputInterface</em> <strong>$input=null</strong>, <em>\Symfony\Component\Console\Output\OutputInterface / null/\Symfony\Component\Console\Output\OutputInterface</em> <strong>$output=null</strong>)</strong> : <em>int</em> |
+| public | <strong>run(</strong><em>\Symfony\Component\Console\Input\InputInterface</em> <strong>$input=null</strong>, <em>\Symfony\Component\Console\Output\OutputInterface</em> <strong>$output=null</strong>)</strong> : <em>int</em> |
 
 
 *This class extends \Symfony\Component\Console\Application*
@@ -224,14 +224,14 @@
 | public | <strong>setClass(</strong><em>\string</em> <strong>$class</strong>)</strong> : <em>[\PHPDocsMD\Entities\FunctionEntity](#class-phpdocsmdentitiesfunctionentity) </em> |
 | public | <strong>setIsReturningNativeClass(</strong><em>\bool</em> <strong>$isReturningNativeClass</strong>)</strong> : <em>[\PHPDocsMD\Entities\FunctionEntity](#class-phpdocsmdentitiesfunctionentity) </em> |
 | public | <strong>setIsStatic(</strong><em>\bool</em> <strong>$isStatic</strong>)</strong> : <em>[\PHPDocsMD\Entities\FunctionEntity](#class-phpdocsmdentitiesfunctionentity) </em> |
-| public | <strong>setParams(</strong><em>[\PHPDocsMD\Entities\ParamEntity](#class-phpdocsmdentitiesparamentity) []</em> <strong>$params</strong>)</strong> : <em>[\PHPDocsMD\Entities\FunctionEntity](#class-phpdocsmdentitiesfunctionentity) </em> |
+| public | <strong>setParams(</strong><em>array</em> <strong>$params</strong>)</strong> : <em>[\PHPDocsMD\Entities\FunctionEntity](#class-phpdocsmdentitiesfunctionentity) </em> |
 | public | <strong>setReturnType(</strong><em>\string</em> <strong>$returnType</strong>)</strong> : <em>[\PHPDocsMD\Entities\FunctionEntity](#class-phpdocsmdentitiesfunctionentity) </em> |
 | public | <strong>setSee(</strong><em>array</em> <strong>$see</strong>)</strong> : <em>[\PHPDocsMD\Entities\FunctionEntity](#class-phpdocsmdentitiesfunctionentity) </em> |
 | public | <strong>setTodo(</strong><em>array</em> <strong>$todo</strong>)</strong> : <em>[\PHPDocsMD\Entities\FunctionEntity](#class-phpdocsmdentitiesfunctionentity) </em> |
 | public | <strong>setVisibility(</strong><em>\string</em> <strong>$visibility</strong>)</strong> : <em>[\PHPDocsMD\Entities\FunctionEntity](#class-phpdocsmdentitiesfunctionentity) </em> |
 
 
-*This class extends [\PHPDocsMD\Entities\CodeEntity](#class-phpdocsmdentitiescodeentity) *
+*This class extends [\PHPDocsMD\Entities\CodeEntity](#class-phpdocsmdentitiescodeentity)*
 
 <hr /><a id="class-phpdocsmdentitiesparamentity"></a>
 
@@ -248,7 +248,7 @@
 | public | <strong>setType(</strong><em>\string</em> <strong>$type</strong>)</strong> : <em>[\PHPDocsMD\Entities\ParamEntity](#class-phpdocsmdentitiesparamentity) </em> |
 
 
-*This class extends [\PHPDocsMD\Entities\CodeEntity](#class-phpdocsmdentitiescodeentity) *
+*This class extends [\PHPDocsMD\Entities\CodeEntity](#class-phpdocsmdentitiescodeentity)*
 
 <hr /><a id="class-phpdocsmdentitiesclassentity"></a>
 
@@ -269,15 +269,15 @@
 | public | <strong>isAbstract(</strong><em>\bool</em> <strong>$toggle=null</strong>)</strong> : <em>bool</em> |
 | public | <strong>isInterface(</strong><em>\bool</em> <strong>$toggle=null</strong>)</strong> : <em>bool</em> |
 | public | <strong>isNative(</strong><em>\bool</em> <strong>$toggle=null</strong>)</strong> : <em>bool</em> |
-| public | <strong>isSame(</strong><em>string / object</em> <strong>$class</strong>)</strong> : <em>bool</em><br /><em>Check whether this object is referring to given class name or object instance</em> |
+| public | <strong>isSame(</strong><em>\string</em> <strong>$class</strong>)</strong> : <em>bool</em><br /><em>Check whether this object is referring to given class name or object instance</em> |
 | public | <strong>setExtends(</strong><em>\string</em> <strong>$extends</strong>)</strong> : <em>[\PHPDocsMD\Entities\ClassEntity](#class-phpdocsmdentitiesclassentity) </em> |
-| public | <strong>setFunctions(</strong><em>FunctionEntity[] / \PHPDocsMD\Entities\FunctionEntity[]</em> <strong>$functions</strong>)</strong> : <em>[\PHPDocsMD\Entities\ClassEntity](#class-phpdocsmdentitiesclassentity) </em> |
+| public | <strong>setFunctions(</strong><em>array</em> <strong>$functions</strong>)</strong> : <em>[\PHPDocsMD\Entities\ClassEntity](#class-phpdocsmdentitiesclassentity) </em> |
 | public | <strong>setInterfaces(</strong><em>array</em> <strong>$implements</strong>)</strong> : <em>[\PHPDocsMD\Entities\ClassEntity](#class-phpdocsmdentitiesclassentity) </em> |
 | public | <strong>setName(</strong><em>\string</em> <strong>$name</strong>)</strong> : <em>[\PHPDocsMD\Entities\ClassEntity](#class-phpdocsmdentitiesclassentity) </em> |
 | public | <strong>setSee(</strong><em>array</em> <strong>$see</strong>)</strong> : <em>[\PHPDocsMD\Entities\ClassEntity](#class-phpdocsmdentitiesclassentity) </em> |
 
 
-*This class extends [\PHPDocsMD\Entities\CodeEntity](#class-phpdocsmdentitiescodeentity) *
+*This class extends [\PHPDocsMD\Entities\CodeEntity](#class-phpdocsmdentitiescodeentity)*
 
 <hr /><a id="interface-phpdocsmdreflectionsreflectorinterface"></a>
 
@@ -301,14 +301,16 @@
 | public | <strong>__construct(</strong><em>\string</em> <strong>$className</strong>, <em>[\PHPDocsMD\FunctionFinder](#class-phpdocsmdfunctionfinder) </em> <strong>$functionFinder=null</strong>, <em>[\PHPDocsMD\DocInfoExtractor](#class-phpdocsmddocinfoextractor) </em> <strong>$docInfoExtractor=null</strong>, <em>[\PHPDocsMD\UseInspector](#class-phpdocsmduseinspector) </em> <strong>$useInspector=null</strong>, <em>[\PHPDocsMD\Entities\ClassEntityFactory](#class-phpdocsmdentitiesclassentityfactory) </em> <strong>$classEntityFactory=null</strong>)</strong> : <em>void</em> |
 | public | <strong>getClassEntity()</strong> : <em>[\PHPDocsMD\Entities\ClassEntity](#class-phpdocsmdentitiesclassentity) </em> |
 | public static | <strong>getParamType(</strong><em>[\ReflectionParameter](https://php.net/manual/en/class.reflectionparameter.php) </em> <strong>$refParam</strong>)</strong> : <em>string</em><br /><em>Tries to find out if the type of the given parameter. Will return empty string if not possible.</em> |
+| public | <strong>getReturnTypeFromMethod(</strong><em>[\ReflectionMethod](https://php.net/manual/en/class.reflectionmethod.php) </em> <strong>$method</strong>, <em>\string</em> <strong>$returnType</strong>)</strong> : <em>string</em> |
+| public | <strong>getReturnTypesArray(</strong><em>\string</em> <strong>$returnType</strong>, <em>array</em> <strong>$useStatements</strong>)</strong> : <em>string</em> |
 | public | <strong>setMethodRegex(</strong><em>\string</em> <strong>$methodRegex</strong>)</strong> : <em>[\PHPDocsMD\Reflections\Reflector](#class-phpdocsmdreflectionsreflector) </em> |
 | public | <strong>setVisibilityFilter(</strong><em>array</em> <strong>$visibilityFilter</strong>)</strong> : <em>[\PHPDocsMD\Reflections\Reflector](#class-phpdocsmdreflectionsreflector) </em> |
-| protected | <strong>createFunctionEntity(</strong><em>[\ReflectionMethod](https://php.net/manual/en/class.reflectionmethod.php) </em> <strong>$method</strong>, <em>[\PHPDocsMD\Entities\ClassEntity](#class-phpdocsmdentitiesclassentity) </em> <strong>$class</strong>, <em>array</em> <strong>$useStatements</strong>)</strong> : <em>bool | FunctionEntity | \PHPDocsMD\Reflections\FunctionEntity</em> |
+| protected | <strong>createFunctionEntity(</strong><em>[\ReflectionMethod](https://php.net/manual/en/class.reflectionmethod.php) </em> <strong>$method</strong>, <em>[\PHPDocsMD\Entities\ClassEntity](#class-phpdocsmdentitiesclassentity) </em> <strong>$class</strong>, <em>array</em> <strong>$useStatements</strong>)</strong> : <em>[\PHPDocsMD\Entities\FunctionEntity](#class-phpdocsmdentitiesfunctionentity)  | bool</em> |
 | protected | <strong>shouldIgnoreFunction(</strong><em>[\PHPDocsMD\DocInfo](#class-phpdocsmddocinfo) </em> <strong>$info</strong>, <em>[\ReflectionMethod](https://php.net/manual/en/class.reflectionmethod.php) </em> <strong>$method</strong>, <em>[\PHPDocsMD\Entities\ClassEntity](#class-phpdocsmdentitiesclassentity) </em> <strong>$class</strong>)</strong> : <em>bool</em> |
 ###### Examples of Reflector::getParamType()
 ```php
 <?php
-  $reflector = new \\ReflectionClass('MyClass');
+  $reflector = new \ReflectionClass('MyClass');
   foreach($reflector->getMethods() as $method ) {
       foreach($method->getParameters() as $param) {
           $name = $param->getName();
@@ -319,5 +321,5 @@
 ```
 
 
-*This class implements [\PHPDocsMD\Reflections\ReflectorInterface](#interface-phpdocsmdreflectionsreflectorinterface) *
+*This class implements [\PHPDocsMD\Reflections\ReflectorInterface](#interface-phpdocsmdreflectionsreflectorinterface)*
 

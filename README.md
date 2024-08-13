@@ -46,7 +46,7 @@ out of the code so that functions that are missing DocBlock comments will still 
 
 ### Requirements
 
-- PHP version >= 5.3.2
+- PHP version >= 8.2
 - Reflection must be enabled in php.ini
 - Each class must be defined in its own file with the file name being the same as the class name
 - The project should use [Composer](https://getcomposer.org/)
@@ -69,28 +69,30 @@ your project's `vendor/bin` directory.
 The `generate` command generates your project's API documentation file. The command line tool needs to know whether you want to generate docs for a certain
 class, or if it should process every class in a specified directory search path.
 
-```
+```shell
 # Generate docs for a certain class
-$ ./vendor/bin/phpdoc-md generate Acme\\NS\\MyClass 
+./vendor/bin/phpdoc-md generate Acme\\NS\\MyClass 
 
 # Generate docs for several classes (comma separated)
-$ ./vendor/bin/phpdoc-md generate Acme\\NS\\MyClass,Acme\\OtherNS\\OtherClass 
+./vendor/bin/phpdoc-md generate Acme\\NS\\MyClass,Acme\\OtherNS\\OtherClass 
 
 # Generate docs for all classes in a source directory
-$ ./vendor/bin/phpdoc-md generate includes/src
+./vendor/bin/phpdoc-md generate includes/src
 
 # Generate docs for all classes in a source directory and send output to the file api.md
-$ ./vendor/bin/phpdoc-md generate includes/src > api.md
+./vendor/bin/phpdoc-md generate includes/src > api.md
 ```
 
-* Note that any class to be documented must be loadable using the autoloader provided by composer. *
+*Note that any class to be documented must be loadable using the autoloader provided by composer.*
 
 ##### Bootstrapping
 
 If you are not using the composer autoloader, or if there is something else that needs to be done before your classes can be instantiated, then you may request
 phpdoc-md to load a php bootstrap file prior to generating the docs
 
-`$ ./vendor/bin/phpdoc-md generate --bootstrap=includes/init.php includes/src > api.md`
+```shell
+./vendor/bin/phpdoc-md generate --bootstrap=includes/init.php includes/src > api.md
+```
 
 ##### Excluding directories
 
