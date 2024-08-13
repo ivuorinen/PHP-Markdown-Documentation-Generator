@@ -245,7 +245,7 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
                         $link = sprintf('[%s](#%s) ', $link, $anchor);
                     }
 
-                    $docs .= PHP_EOL . '*This class extends ' . $link . '*' . PHP_EOL;
+                    $docs .= PHP_EOL . '*This class extends ' . trim($link) . '*' . PHP_EOL;
                 }
 
                 if ($interfaces = $class->getInterfaces()) {
@@ -262,7 +262,7 @@ class PHPDocsMDCommand extends \Symfony\Component\Console\Command\Command
                     $docs .= PHP_EOL .
                         sprintf(
                             '*This class implements %s*',
-                            implode(', ', $interfaceNames)
+                            trim(implode(', ', $interfaceNames))
                         ) .
                         PHP_EOL;
                 }
