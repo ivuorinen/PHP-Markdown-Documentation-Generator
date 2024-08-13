@@ -15,6 +15,7 @@ use PHPDocsMD\Utils;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
+use ReflectionUnionType;
 use RuntimeException;
 
 use function count;
@@ -242,33 +243,13 @@ class Reflector implements ReflectorInterface
 
         if ($func->getReturnType() !== $returnType && $method->hasReturnType()) {
             /** @var \ReflectionNamedType|null $name */
-            $name = $method->getReturnType();
-            $name = ($name === null) ? $returnType : $name->getName();
-
-            if ($name !== 'self' && Utils::isNativeType($name)) {
-                $returnType = $name;
-            } else {
-                $returnType = $name === 'self' ? '\\' . $method->class : '\\' . $name;
-            }
+            $returnType = $this->getReturnTypeFromMethod($method, $returnType);
         }
 
         if (empty($returnType)) {
             $returnType = $this->guessReturnTypeFromFuncName($func->getName(), $method);
         } elseif (Utils::isClassReference($returnType) && !$this->classExists($returnType)) {
-            $isReferenceToArrayOfObjects = str_ends_with($returnType, '[]') ? '[]' : '';
-            if ($isReferenceToArrayOfObjects) {
-                $returnType = substr($returnType, 0, -2);
-            }
-            $strippedClassName = $this->stripAwayNamespace($returnType);
-            foreach ($useStatements as $usedClass) {
-                if ($this->stripAwayNamespace($usedClass) === $strippedClassName) {
-                    $returnType = $usedClass;
-                    break;
-                }
-            }
-            if ($isReferenceToArrayOfObjects) {
-                $returnType .= '[]';
-            }
+            $returnType = $this->getReturnTypesArray($returnType, $useStatements);
         }
 
         return Utils::sanitizeDeclaration(
@@ -403,7 +384,7 @@ class Reflector implements ReflectorInterface
             }
         } else {
             $docs = [
-                'descriptions' => '',
+                'description' => '',
                 'name' => $varName,
                 'default' => $def,
                 'type' => $type,
@@ -412,7 +393,7 @@ class Reflector implements ReflectorInterface
 
         $param = new ParamEntity();
         $param->setDescription($docs['description'] ?? '');
-        $param->setName($varName);
+        $param->setName($docs['name'] ?? $varName);
         $param->setDefault($docs['default']);
         $param->setType(
             empty($docs['type'])
@@ -434,7 +415,7 @@ class Reflector implements ReflectorInterface
      * ```php
      * <code>
      *  <?php
-     *      $reflector = new \\ReflectionClass('MyClass');
+     *      $reflector = new \ReflectionClass('MyClass');
      *      foreach($reflector->getMethods() as $method ) {
      *          foreach($method->getParameters() as $param) {
      *              $name = $param->getName();
@@ -499,5 +480,60 @@ class Reflector implements ReflectorInterface
         $this->methodRegex = $methodRegex;
 
         return $this;
+    }
+
+    /**
+     * @param \ReflectionMethod $method
+     * @param string            $returnType
+     *
+     * @return string
+     */
+    public function getReturnTypeFromMethod(ReflectionMethod $method, string $returnType): string
+    {
+        $name = $method->getReturnType();
+
+        if ($name instanceof ReflectionUnionType) {
+            $returnType = implode(
+                '|',
+                array_map(static fn($type) => $type->getName(), $name->getTypes())
+            );
+            $name = null;
+        }
+
+        $name = ($name === null) ? $returnType : $name->getName();
+
+        if ($name !== 'self' && Utils::isNativeType($name)) {
+            $returnType = $name;
+        } else {
+            $returnType = $name === 'self' ? '\\' . $method->class : '\\' . $name;
+        }
+
+        return $returnType;
+    }
+
+    /**
+     * @param string $returnType
+     * @param array  $useStatements
+     *
+     * @return string
+     */
+    public function getReturnTypesArray(string $returnType, array $useStatements): string
+    {
+        $isReferenceToArrayOfObjects = str_ends_with($returnType, '[]') ? '[]' : '';
+        if ($isReferenceToArrayOfObjects) {
+            $returnType = substr($returnType, 0, -2);
+        }
+        $strippedClassName = $this->stripAwayNamespace($returnType);
+        foreach ($useStatements as $usedClass) {
+            if ($this->stripAwayNamespace($usedClass) === $strippedClassName) {
+                $returnType = (string)$usedClass;
+                break;
+            }
+        }
+        if ($isReferenceToArrayOfObjects) {
+            $returnType .= '[]';
+        }
+
+        return $returnType;
     }
 }
