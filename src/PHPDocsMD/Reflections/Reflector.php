@@ -473,7 +473,9 @@ class Reflector implements ReflectorInterface
             $name = null;
         }
 
-        $name = ($name === null) ? $returnType : $name->getName();
+        $name = ($name === null || !method_exists($name, 'getName'))
+            ? $returnType
+            : $name->getName();
 
         if ($name !== 'self' && Utils::isNativeType($name)) {
             $returnType = $name;
