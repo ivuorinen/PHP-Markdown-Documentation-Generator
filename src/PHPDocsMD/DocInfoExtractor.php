@@ -65,7 +65,9 @@ class DocInfoExtractor
                     $tags['params'][$name] = $data;
                 }
             } elseif ($words[0] === '@see') {
-                /** @psalm-suppress PossiblyInvalidOperand */
+                if (!isset($tags['see']) || !is_array($tags['see'])) {
+                    $tags['see'] = [];
+                }
                 $tags['see'][] = $this->figureOutSeeDeclaration($words);
             } else {
                 // Start new tag
