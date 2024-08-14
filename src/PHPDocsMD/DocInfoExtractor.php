@@ -26,12 +26,7 @@ class DocInfoExtractor
         return new DocInfo($data);
     }
 
-    /**
-     * @param \ReflectionClass|\ReflectionMethod $reflection
-     *
-     * @return string
-     */
-    private function getCleanDocComment(\Reflector $reflection): string
+    private function getCleanDocComment(ReflectionClass|ReflectionMethod $reflection): string
     {
         $comment = str_replace(['/*', '*/'], '', $reflection->getDocComment());
 
@@ -39,10 +34,6 @@ class DocInfoExtractor
     }
 
     /**
-     * @param string                             $comment
-     * @param \ReflectionMethod|\ReflectionClass $reflection
-     * @param string                             $current_tag
-     *
      * @return array|string[]
      */
     private function extractInfoFromComment(
