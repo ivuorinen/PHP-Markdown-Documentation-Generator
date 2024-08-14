@@ -1,6 +1,6 @@
 # PHP-Markdown-Documentation-Generator
 
-Documentation is just as important as the code it's refering to. With this command line tool you will be able to write your documentation once, and only once!
+Documentation is just as important as the code it's referring to. With this command line tool you will be able to write your documentation once, and only once!
 
 This project will write a single-page markdown-formatted API document based on the DocBlock comments in your source code.
 
@@ -30,15 +30,13 @@ class MyObject {
     * @param array $arr
     * @return Acme\OtherObject
     */
-   public function someFunc($str, $arr=[]) {
-   
-   }
+   public function someFunc($str, $arr=[]) {}
 }
 ```
 
-Then, running `$ phpdoc-md generate src > api.md` will write your API documentation to the file api.md.
+Then, running `phpdoc-md generate src > api.md` will write your API documentation to the file api.md.
 
-[Here you can see a rendered example](https://github.com/ivuorinen/PHP-Markdown-Documentation-Generator/blob/master/docs.md)
+[Here you can see a rendered example](https://github.com/ivuorinen/markdowndocs/blob/main/docs.md)
 
 Only public and protected functions will be a part of the documentation, but you can also add `@ignore` to any function or class to exclude it from the docs.
 Phpdoc-md will try to guess the return type of functions that don't explicitly declare one. The program uses reflection to get as much information as possible
@@ -61,7 +59,7 @@ From the local working directory of the project that you would like to document,
 composer require --dev ivuorinen/markdowndocs
 ```
 
-This will add ivuorinen/markdowndocs to the `require-dev` section of your project's composer.json file. The phpdoc-md executable will automatically be copied to
+This will add ivuorinen/markdowndocs to the `require-dev` section of your project's composer.json file. The `phpdoc-md` executable will automatically be copied to
 your project's `vendor/bin` directory.
 
 ##### Generating docs
@@ -98,4 +96,6 @@ phpdoc-md to load a php bootstrap file prior to generating the docs
 
 You can tell the command line tool to ignore certain directories in your class path by using the `--ignore` option.
 
-`$ ./phpdoc-md generate --ignore=test,examples includes/src > api.md`
+```shell
+./phpdoc-md generate --ignore=test,examples includes/src > api.md
+```
