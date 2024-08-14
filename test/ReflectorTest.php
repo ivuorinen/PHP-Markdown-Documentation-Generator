@@ -1,4 +1,5 @@
 <?php
+/** @noinspection ClassConstantCanBeUsedInspection */
 
 use PHPDocsMD\Entities\ClassEntity;
 use PHPDocsMD\Entities\FunctionEntity;
@@ -170,7 +171,7 @@ class ReflectorTest extends TestCase
         $this->assertEquals('\\PHPDocsMD\\Console\\CLI[]', $functions[0]->getReturnType());
     }
 
-    public function visibilityFiltersAndExpectedMethods(): array
+    public static function visibilityFiltersAndExpectedMethods(): array
     {
         return [
             'public'               => [
@@ -196,15 +197,13 @@ class ReflectorTest extends TestCase
         $reflector->setVisibilityFilter($visibilityFilter);
         $functions     = $reflector->getClassEntity()->getFunctions();
         $functionNames = array_map(
-            function (FunctionEntity $entity) {
-                return $entity->getName();
-            },
+            static fn(FunctionEntity $entity) => $entity->getName(),
             $functions
         );
         $this->assertEquals($expectedMethods, $functionNames);
     }
 
-    public function regexFiltersAndExpectedMethods(): array
+    public static function regexFiltersAndExpectedMethods(): array
     {
         return [
             'has-only'              => ['/^has/', ['hasFunc']],
@@ -226,9 +225,7 @@ class ReflectorTest extends TestCase
         $reflector->setMethodRegex($regexFilter);
         $functions     = $reflector->getClassEntity()->getFunctions();
         $functionNames = array_map(
-            function (FunctionEntity $entity) {
-                return $entity->getName();
-            },
+            static fn(FunctionEntity $entity) => $entity->getName(),
             $functions
         );
         $this->assertEquals($expectedMethods, $functionNames);
