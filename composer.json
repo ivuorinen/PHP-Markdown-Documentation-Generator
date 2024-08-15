@@ -2,7 +2,7 @@
     "name": "ivuorinen/markdowndocs",
     "description": "Command line tool for generating markdown-formatted class documentation",
     "license": "MIT",
-    "version": "3.0.2",
+    "version": "4.0.0",
     "authors": [
         {
             "name": "Victor Jonsson",
